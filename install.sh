@@ -1,335 +1,1073 @@
 #!/bin/bash
 
-# STAR Tunnel - Complete Integration of HAProxy and Nebula Tunnel
-# Version: 5.0.0
-# Author: MrStar
-# Telegram: @MoriiStar
-
-# ========================
-# GLOBAL CONFIGURATIONS
-# ========================
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+plain='\033[0m'
+NC='\033[0m' 
 
-# Paths
-STAR_DIR="/etc/star"
-OBFS4_DIR="/etc/obfs4"
-HAPROXY_CFG="/etc/haproxy/haproxy.cfg"
-HAPROXY_BACKUP="/etc/haproxy/haproxy.cfg.bak"
-NETPLAN_DIR="/etc/netplan"
-CONNECTORS_DIR="/root/connectors"
+cur_dir=$(pwd)
 
-# Server Info
-SERVER_IP=$(ip -4 addr | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v "127.0.0.1")
-SERVER_COUNTRY=$(curl -sS https://ipapi.co/country_name)
-SERVER_ISP=$(curl -sS https://ipapi.co/org)
+[[ $EUID -ne 0 ]] && echo -e "${RED}Fatal error: ${plain} Please run this script with root privilege \n " && exit 1
 
-# ========================
-# CORE FUNCTIONS
-# ========================
-
-display_banner() {
-    clear
-    echo -e "${BLUE}"
-    cat << "EOF"
-   _____ _______    _____   _____ 
-  / ____|__   __|  / ____| / ____|
- | (___    | |    | |  __ | |  __ 
-  \___ \   | |    | | |_ || | |_ |
-  ____) |  | |    | |__| || |__| |
- |_____/   |_|     \_____| \_____|
-EOF
-    echo -e "${NC}"
-    echo -e "${CYAN}Advanced Tunnel & Proxy Management System${NC}"
-    echo -e "${YELLOW}Version: 5.0.0 | Telegram: @AminiDev${NC}"
-    echo "----------------------------------------------"
-    echo -e "${GREEN}Server IP: ${SERVER_IP} | Country: ${SERVER_COUNTRY} | ISP: ${SERVER_ISP}${NC}"
-    echo "----------------------------------------------"
-}
-
-check_root() {
-    [[ $EUID -ne 0 ]] && echo -e "${RED}Error: This script must be run as root${NC}" && exit 1
-}
-
-install_dependencies() {
-    echo -e "${YELLOW}Checking and installing dependencies...${NC}"
-    
-    local deps=("jq" "obfs4proxy" "haproxy" "netplan.io" "iproute2" "screen" "openssl" "curl")
-    local to_install=()
-    
-    for dep in "${deps[@]}"; do
-        if ! command -v $dep &> /dev/null; then
-            to_install+=("$dep")
-        fi
-    done
-
-    if [ ${#to_install[@]} -ne 0 ]; then
-        apt-get update
-        if ! apt-get install -y "${to_install[@]}"; then
-            echo -e "${RED}Failed to install dependencies. Trying alternative approach...${NC}"
-            for dep in "${to_install[@]}"; do
-                if ! apt-get install -y $dep; then
-                    echo -e "${RED}Critical error: Failed to install $dep${NC}"
-                    exit 1
-                fi
-            done
+install_jq() {
+    if ! command -v jq &> /dev/null; then
+        if command -v apt-get &> /dev/null; then
+            echo -e "${RED}jq is not installed. Installing...${NC}"
+            sleep 1
+            sudo apt-get update
+            sudo apt-get install -y jq
+        else
+            echo -e "${RED}Error: Unsupported package manager. Please install jq manually.${NC}\n"
+            read -p "Press any key to continue..."
+            exit 1
         fi
     fi
-    
-    mkdir -p {$STAR_DIR,$OBFS4_DIR,$NETPLAN_DIR,$CONNECTORS_DIR}
 }
 
-# ========================
-# TUNNEL FUNCTIONS
-# ========================
+install_obfs4() {
+    if ! command -v obfs4proxy &> /dev/null; then
+        echo -e "${YELLOW}Installing obfs4proxy...${NC}"
+        sudo apt-get update
+        sudo apt-get install -y obfs4proxy
+        if ! command -v obfs4proxy &> /dev/null; then
+            echo -e "${RED}Failed to install obfs4proxy. Please install it manually.${NC}"
+            exit 1
+        else
+            echo -e "${GREEN}obfs4proxy installed successfully.${NC}"
+        fi
+    fi
+}
 
 configure_obfs4() {
-    local cert="$OBFS4_DIR/obfs4_cert"
-    local key="$OBFS4_DIR/obfs4_key"
-    
-    if [[ ! -f $cert || ! -f $key ]]; then
-        echo -e "${YELLOW}Generating new obfs4 certificates...${NC}"
-        openssl genpkey -algorithm RSA -out "$key" -pkeyopt rsa_keygen_bits:2048 || {
-            echo -e "${RED}Failed to generate private key${NC}"; return 1
-        }
+    local obfs4_dir="/etc/obfs4"
+    local obfs4_cert="$obfs4_dir/obfs4_cert"
+    local obfs4_key="$obfs4_dir/obfs4_key"
+
+    mkdir -p "$obfs4_dir"
+
+    if [ ! -f "$obfs4_cert" ] || [ ! -f "$obfs4_key" ]; then
+        echo -e "${YELLOW}Generating obfs4 certificate and private key...${NC}"
         
-        openssl req -new -x509 -key "$key" -out "$cert" -days 365 -subj "/CN=obfs4" || {
-            echo -e "${RED}Failed to generate certificate${NC}"; return 1
-        }
+        openssl genpkey -algorithm RSA -out "$obfs4_key" -pkeyopt rsa_keygen_bits:2048
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Failed to generate private key.${NC}"
+            exit 1
+        fi
+
+        openssl req -new -x509 -key "$obfs4_key" -out "$obfs4_cert" -days 365 -subj "/CN=obfs4"
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Failed to generate certificate.${NC}"
+            exit 1
+        fi
+
+        echo -e "${GREEN}obfs4 certificate and private key generated successfully.${NC}"
     fi
-    
-    cat <<EOL > "$OBFS4_DIR/obfs4.json"
+
+    cat <<EOL > "$obfs4_dir/obfs4.json"
 {
     "transport": "obfs4",
     "bind_address": "0.0.0.0:443",
-    "cert": "$cert",
+    "cert": "$obfs4_cert",
     "iat-mode": "0",
     "log_level": "INFO",
     "options": {
         "node-id": "$(cat /etc/hostname)",
-        "private-key": "$(cat "$key")"
+        "private-key": "$(cat "$obfs4_key")"
     }
 }
 EOL
-    echo -e "${GREEN}Obfs4 configuration complete${NC}"
+
+    echo -e "${GREEN}obfs4 configuration file created at $obfs4_dir/obfs4.json${NC}"
 }
+
 
 start_obfs4() {
     echo -e "${YELLOW}Starting obfs4 service...${NC}"
-    pkill -f obfs4proxy
-    nohup obfs4proxy -logLevel INFO -enableLogging > "$STAR_DIR/obfs4.log" 2>&1 &
-    [[ $? -eq 0 ]] && echo -e "${GREEN}Obfs4 started successfully${NC}" || echo -e "${RED}Failed to start obfs4${NC}"
+    obfs4proxy -logLevel INFO -enableLogging &
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}obfs4 service started successfully.${NC}"
+    else
+        echo -e "${RED}Failed to start obfs4 service.${NC}"
+        exit 1
+    fi
 }
 
-create_tunnel() {
-    local type=$1
-    display_banner
-    
-    echo -e "${CYAN}Creating ${type^^} Tunnel Configuration${NC}"
-    
-    read -p "Enter local IP: " local_ip
-    read -p "Enter remote IP: " remote_ip
-    read -p "Enter IPv6 address (or 'auto' for automatic): " ipv6_input
-    
-    if [[ "$ipv6_input" == "auto" ]]; then
-        local tunnel_num=$(find_next_tunnel_num)
-        if [[ "$type" == "iran" ]]; then
-            ipv6_addr="fd25:2895:dc$(printf "%02d" $tunnel_num)::1"
-        else
-            ipv6_addr="fd25:2895:dc$(printf "%02d" $tunnel_num)::2"
+init() {
+    install_jq
+    install_obfs4
+    configure_obfs4
+    start_obfs4
+    sudo apt-get install -y iproute2 screen
+    echo -e "${GREEN}Initialization complete.${NC}"
+}
+
+nebula_menu() {
+    clear
+
+    # Get server IP
+    SERVER_IP=$(hostname -I | awk '{print $1}')
+
+    # Fetch server country using ip-api.com
+    SERVER_COUNTRY=$(curl -sS "http://ip-api.com/json/$SERVER_IP" | jq -r '.country')
+
+    # Fetch server isp using ip-api.com 
+    SERVER_ISP=$(curl -sS "http://ip-api.com/json/$SERVER_IP" | jq -r '.isp')
+	
+    nebula_core=$(check_core_status)
+
+    echo "+--------------------------------------------------------------+"
+    echo "|                                                              |" 
+    echo "|.__   __.  _______ ._____     __    __   __          ___      |"
+    echo "||  \ |  | |   ____||   _  \  |  |  |  | |  |        /   \ _   |"
+    echo "||  .    | |   __|  |   _  <  |  |  |  | |  |      /  /_\  \   |"
+    echo "||  |\   | |  |____ |  |_)  | |   --   | |   ----./  _____  \  |"
+    echo "||__| \__| |_______||______/   \______/  |_______/__/     \__\ |"
+    echo "|                                                              |" 
+    echo "+--------------------------------------------------------------+"    
+    echo -e "| Telegram Channel : ${MAGENTA}@AminiDev ${NC}| Version : ${GREEN} 5.0.0 ${NC} "
+    echo "+--------------------------------------------------------------+"  
+    echo -e "|${GREEN}Server Country    |${NC} $SERVER_COUNTRY"
+    echo -e "|${GREEN}Server IP         |${NC} $SERVER_IP"
+    echo -e "|${GREEN}Server ISP        |${NC} $SERVER_ISP"
+    echo -e "|${GREEN}Server Tunnel     |${NC} $nebula_core"
+    echo "+--------------------------------------------------------------------------------+"
+    echo -e "|${YELLOW}Please choose an option:${NC}"
+    echo "+--------------------------------------------------------------------------------+"
+    echo -e $1
+    echo "+---------------------------------------------------------------------------------+"
+    echo -e "\033[0m"
+}
+
+find_last_tunnel_number() {
+    local last_number=0
+    for file in /etc/netplan/mramini-*.yaml; do
+        if [ -f "$file" ]; then
+            local number=$(echo "$file" | grep -o 'mramini-[0-9]*' | cut -d'-' -f2)
+            if [ "$number" -gt "$last_number" ]; then
+                last_number=$number
+            fi
         fi
-        echo -e "${YELLOW}Using automatic IPv6: ${ipv6_addr}${NC}"
-    else
-        ipv6_addr="$ipv6_input"
-    fi
+    done
+    echo $last_number
+}
+
+install_tunnel() {
+    nebula_menu "| 1  - IRAN \n| 2  - Kharej \n| 0  - Exit"
+
+    read -p "Enter option number: " setup
+
+    read -p "How many servers: " server_count
+
+    # Find the last tunnel number
+    last_number=$(find_last_tunnel_number)
+    next_number=$((last_number + 1))
+
+    echo -e "\n${GREEN}Choose IPv6 Local configuration:${NC}"
+    echo "1- Enter IPV6 Local manually (recommended)"
+    echo "2- Set IPV6 Local automatically"
+    read -p "Enter your choice: " ipv6_choice
+
+    case $setup in
+    1)
+        for ((i=next_number;i<next_number+server_count;i++))
+        do
+            if [ "$ipv6_choice" = "1" ]; then
+                iran_setup $i
+            else
+                auto_ipv6="fd25:2895:dc$(printf "%02d" $i)::1"
+                iran_setup_auto $i "$auto_ipv6"
+            fi
+        done
+        ;;  
+    2)
+        for ((i=next_number;i<next_number+server_count;i++))
+        do
+            if [ "$ipv6_choice" = "1" ]; then
+                kharej_setup $i
+            else
+                auto_ipv6="fd25:2895:dc$(printf "%02d" $i)::2"
+                kharej_setup_auto $i "$auto_ipv6"
+            fi
+        done
+        ;;
+
+    0)
+        echo -e "${GREEN}Exiting program...${NC}"
+        exit 0
+        ;;
+    *)
+        echo "Not valid"
+        ;;
+    esac
+}
+
+iran_setup() {
+    echo -e "${YELLOW}Setting up IRAN server $1${NC}"
     
-    local config_file="$NETPLAN_DIR/star_${type}_${tunnel_num}.yaml"
+    read -p "Enter IRAN IP    : " iran_ip
+    read -p "Enter Kharej IP  : " kharej_ip
+    read -p "Enter IPv6 Local : " ipv6_local
     
-    cat <<EOL > "$config_file"
+    cat <<EOL > /etc/netplan/mramini-$1.yaml
 network:
   version: 2
   tunnels:
-    tunnel_${type}_${tunnel_num}:
+    tunnel0858-$1:
       mode: sit
-      local: $local_ip
-      remote: $remote_ip
+      local: $iran_ip
+      remote: $kharej_ip
       addresses:
-        - ${ipv6_addr}/64
+        - $ipv6_local::1/64
 EOL
-    
-    netplan apply
-    
-    # Create connector script
-    local connector_file="$CONNECTORS_DIR/${type}_${tunnel_num}.sh"
-    if [[ "$type" == "iran" ]]; then
-        echo "ping6 ${ipv6_addr%::1}::2" > "$connector_file"
-    else
-        echo "ping6 ${ipv6_addr%::2}::1" > "$connector_file"
-    fi
-    
-    chmod +x "$connector_file"
-    screen -dmS "star_${type}_${tunnel_num}" bash -c "$connector_file"
-    
-    echo -e "${GREEN}${type^^} tunnel ${tunnel_num} created successfully!${NC}"
-    echo -e "${YELLOW}IPv6 Address: ${ipv6_addr}${NC}"
-    echo -e "${BLUE}Connector running in screen session: star_${type}_${tunnel_num}${NC}"
-}
+    netplan_setup
+    sudo netplan apply
 
-# ========================
-# HAPROXY FUNCTIONS
-# ========================
+    start_obfs4
 
-setup_haproxy() {
-    echo -e "${YELLOW}Configuring HAProxy...${NC}"
-    
-    if [[ ! -f "$HAPROXY_CFG" ]]; then
-        cat <<EOL > "$HAPROXY_CFG"
-global
-    log /dev/log local0
-    log /dev/log local1 notice
-    chroot /var/lib/haproxy
-    stats socket /run/haproxy/admin.sock mode 660 level admin
-    stats timeout 30s
-    user haproxy
-    group haproxy
-    daemon
-
-defaults
-    log global
-    mode tcp
-    option dontlognull
-    timeout connect 5000
-    timeout client 50000
-    timeout server 50000
-    errorfile 400 /etc/haproxy/errors/400.http
-    errorfile 403 /etc/haproxy/errors/403.http
-    errorfile 408 /etc/haproxy/errors/408.http
-    errorfile 500 /etc/haproxy/errors/500.http
-    errorfile 502 /etc/haproxy/errors/502.http
-    errorfile 503 /etc/haproxy/errors/503.http
-    errorfile 504 /etc/haproxy/errors/504.http
+    cat <<EOL > /root/connectors-$1.sh
+ping $ipv6_local::2
 EOL
-    fi
-    
-    systemctl restart haproxy
-    echo -e "${GREEN}HAProxy configuration complete${NC}"
+
+    chmod +x /root/connectors-$1.sh
+
+    screen -dmS connectors_session_$1 bash -c "/root/connectors-$1.sh"
+
+    echo "IRAN Server $1 setup complete."
+    echo -e "####################################"
+    echo -e "# Your IPv6 :                      #"
+    echo -e "#  $ipv6_local::1                  #"
+    echo -e "####################################"
 }
 
-add_haproxy_service() {
-    display_banner
-    echo -e "${CYAN}Add HAProxy Service${NC}"
+iran_setup_auto() {
+    echo -e "${YELLOW}Setting up IRAN server $1${NC}"
     
-    read -p "Enter frontend port: " front_port
-    read -p "Enter backend servers (IP:PORT,IP:PORT,...): " backend_servers
+    read -p "Enter IRAN IP    : " iran_ip
+    read -p "Enter Kharej IP  : " kharej_ip
     
-    IFS=',' read -ra servers <<< "$backend_servers"
+    cat <<EOL > /etc/netplan/mramini-$1.yaml
+network:
+  version: 2
+  tunnels:
+    tunnel0858-$1:
+      mode: sit
+      local: $iran_ip
+      remote: $kharej_ip
+      addresses:
+        - $2/64
+EOL
+    netplan_setup
+    sudo netplan apply
+
+    start_obfs4
+
+    cat <<EOL > /root/connectors-$1.sh
+ping ${2%::1}::2
+EOL
+
+    chmod +x /root/connectors-$1.sh
+
+    screen -dmS connectors_session_$1 bash -c "/root/connectors-$1.sh"
+
+    echo "IRAN Server $1 setup complete."
+    echo -e "####################################"
+    echo -e "# Your IPv6 :                      #"
+    echo -e "#  $2                             #"
+    echo -e "####################################"
+}
+
+kharej_setup() {
+    echo -e "${YELLOW}Setting up Kharej server $1${NC}"
     
-    # Add frontend
-    echo -e "\nfrontend star_front_$front_port" >> "$HAPROXY_CFG"
-    echo "    bind *:$front_port" >> "$HAPROXY_CFG"
-    echo "    default_backend star_back_$front_port" >> "$HAPROXY_CFG"
+    read -p "Enter IRAN IP    : " iran_ip
+    read -p "Enter Kharej IP  : " kharej_ip
+    read -p "Enter IPv6 Local : " ipv6_local
     
-    # Add backend
-    echo -e "\nbackend star_back_$front_port" >> "$HAPROXY_CFG"
-    for i in "${!servers[@]}"; do
-        local server_num=$((i+1))
-        local status=""
-        [[ $i -gt 0 ]] && status=" backup"
-        echo "    server server$server_num ${servers[$i]} check$status" >> "$HAPROXY_CFG"
-    done
+    cat <<EOL > /etc/netplan/mramini-$1.yaml
+network:
+  version: 2
+  tunnels:
+    tunnel0858-$1:
+      mode: sit
+      local: $kharej_ip
+      remote: $iran_ip
+      addresses:
+        - $ipv6_local::2/64
+EOL
+    netplan_setup
+    sudo netplan apply
+
+    start_obfs4
+
+    cat <<EOL > /root/connectors-$1.sh
+ping $ipv6_local::1
+EOL
+
+    chmod +x /root/connectors-$1.sh
+
+    screen -dmS connectors_session_$1 bash -c "/root/connectors-$1.sh"
+
+    echo "Kharej Server $1 setup complete."
+    echo -e "####################################"
+    echo -e "# Your IPv6 :                      #"
+    echo -e "#  $ipv6_local::2                  #"
+    echo -e "####################################"
+}
+
+kharej_setup_auto() {
+    echo -e "${YELLOW}Setting up Kharej server $1${NC}"
     
-    # Validate config
-    if haproxy -c -f "$HAPROXY_CFG"; then
-        systemctl restart haproxy
-        echo -e "${GREEN}Service added successfully!${NC}"
+    read -p "Enter IRAN IP    : " iran_ip
+    read -p "Enter Kharej IP  : " kharej_ip
+    
+    cat <<EOL > /etc/netplan/mramini-$1.yaml
+network:
+  version: 2
+  tunnels:
+    tunnel0858-$1:
+      mode: sit
+      local: $kharej_ip
+      remote: $iran_ip
+      addresses:
+        - $2/64
+EOL
+    netplan_setup
+    sudo netplan apply
+
+    start_obfs4
+
+    cat <<EOL > /root/connectors-$1.sh
+ping ${2%::2}::1
+EOL
+
+    chmod +x /root/connectors-$1.sh
+
+    screen -dmS connectors_session_$1 bash -c "/root/connectors-$1.sh"
+
+    echo "Kharej Server $1 setup complete."
+    echo -e "####################################"
+    echo -e "# Your IPv6 :                      #"
+    echo -e "#  $2                             #"
+    echo -e "####################################"
+}
+
+check_core_status() {
+    local file_path="/etc/netplan/mramini-1.yaml"
+    local status
+
+    if [ -f "$file_path" ]; then
+        status="${GREEN}Installed${NC}"
     else
-        echo -e "${RED}Invalid configuration! Changes not applied.${NC}"
-        cp "$HAPROXY_BACKUP" "$HAPROXY_CFG"
+        status="${RED}Not installed${NC}"
+    fi
+
+    echo "$status"
+}
+
+netplan_setup() {
+    command -v netplan &> /dev/null || { 
+        sudo apt update && sudo apt install -y netplan.io && echo "netplan installed successfully." || echo "Failed to install netplan."; 
+    }
+}
+
+unistall() {
+    echo $'\e[32mUninstalling Nebula in 3 seconds... \e[0m' && sleep 1 && echo $'\e[32m2... \e[0m' && sleep 1 && echo $'\e[32m1... \e[0m' && sleep 1 && {
+        # Stop all screen sessions
+        pkill screen
+        
+        # Find all tunnel0858 interfaces and delete them
+        for iface in $(ip link show | grep 'tunnel0858' | awk -F': ' '{print $2}' | cut -d'@' -f1); do
+            echo -e "${YELLOW}Removing interface $iface...${NC}"
+            ip link set $iface down
+            ip link delete $iface
+        done
+        
+        # Remove netplan configuration files
+        rm -f /etc/netplan/mramini*.yaml
+        netplan apply
+        
+        # Remove connector scripts
+        rm -f /root/connectors-*.sh
+        
+        # Stop and disable ping monitor service
+        systemctl stop ping-monitor.service 2>/dev/null
+        systemctl disable ping-monitor.service 2>/dev/null
+        rm -f /etc/systemd/system/ping-monitor.service
+        rm -f /root/ping_monitor.sh
+        
+        # Kill any remaining obfs4proxy processes
+        pkill obfs4proxy
+        
+        # Remove obfs4 configuration
+        rm -rf /etc/obfs4
+        
+        # Restart networking to apply changes
+        systemctl restart systemd-networkd
+        
+        # Verify all tunnel0858 interfaces are removed
+        remaining_tunnels=$(ip link show | grep 'tunnel0858' | wc -l)
+        if [ $remaining_tunnels -gt 0 ]; then
+            echo -e "${RED}Warning: $remaining_tunnels tunnel interfaces still remain.${NC}"
+            echo -e "${YELLOW}Attempting force removal with ip command...${NC}"
+            # Force remove any remaining tunnel interfaces
+            ip link show | grep 'tunnel0858' | awk -F': ' '{print $2}' | cut -d'@' -f1 | while read iface; do
+                ip link set $iface down
+                ip link delete $iface 2>/dev/null
+            done
+        fi
+        
+        clear
+        echo -e "${GREEN}Nebula Uninstalled successfully!${NC}"
+    }
+    loader
+}
+
+manage_tunnels() {
+    clear
+    echo "+--------------------------------------------------------------+"
+    echo "|                    Tunnel Management                         |"
+    echo "+--------------------------------------------------------------+"
+    
+    # List all existing tunnels
+    echo -e "\n${GREEN}Existing Tunnels:${NC}"
+    ls /etc/netplan/mramini-*.yaml 2>/dev/null | while read -r file; do
+        tunnel_name=$(basename "$file" .yaml)
+        echo -e "${YELLOW}$tunnel_name${NC}"
+    done
+    
+    echo -e "\n${GREEN}Options:${NC}"
+    echo "1) Edit Tunnel"
+    echo "2) Delete Tunnel"
+    echo "0) Back to Main Menu"
+    
+    read -p "Enter your choice: " choice
+    
+    case $choice in
+        1)
+            read -p "Enter tunnel name to edit (e.g., mramini-1): " tunnel_name
+            if [ -f "/etc/netplan/$tunnel_name.yaml" ]; then
+                read -p "Enter new IRAN IP: " iran_ip
+                read -p "Enter new Kharej IP: " kharej_ip
+                read -p "Enter new IPv6 Local: " ipv6_local
+                
+                # Update the tunnel configuration
+                cat <<EOL > "/etc/netplan/$tunnel_name.yaml"
+network:
+  version: 2
+  tunnels:
+    tunnel0858-$(echo $tunnel_name | cut -d'-' -f2):
+      mode: sit
+      local: $iran_ip
+      remote: $kharej_ip
+      addresses:
+        - $ipv6_local::1/64
+EOL
+                netplan apply
+                echo -e "${GREEN}Tunnel updated successfully!${NC}"
+            else
+                echo -e "${RED}Tunnel not found!${NC}"
+            fi
+            ;;
+        2)
+            read -p "Enter tunnel name to delete (e.g., mramini-1): " tunnel_name
+            if [ -f "/etc/netplan/$tunnel_name.yaml" ]; then
+                # Stop the connector script if it exists
+                if [ -f "/root/connectors-$(echo $tunnel_name | cut -d'-' -f2).sh" ]; then
+                    pkill -f "connectors-$(echo $tunnel_name | cut -d'-' -f2).sh"
+                    rm "/root/connectors-$(echo $tunnel_name | cut -d'-' -f2).sh"
+                fi
+                
+                # Remove the tunnel configuration
+                rm "/etc/netplan/$tunnel_name.yaml"
+                netplan apply
+                echo -e "${GREEN}Tunnel deleted successfully!${NC}"
+            else
+                echo -e "${RED}Tunnel not found!${NC}"
+            fi
+            ;;
+        0)
+            return
+            ;;
+        *)
+            echo -e "${RED}Invalid choice!${NC}"
+            ;;
+    esac
+    
+    read -p "Press Enter to continue..."
+}
+
+loader() {
+    nebula_menu "| 1  - Config Tunnel \n| 2  - Unistall\n| 3  - Install BBR\n| 4  - Haproxy Menu\n| 5  - Manage Tunnels\n| 0  - Exit"
+
+    read -p "Enter option number: " choice
+    case $choice in
+    1)
+        install_tunnel
+        ;;  
+    2)
+        unistall
+        ;;
+    3)
+        echo "Running BBR script..."
+        curl -fsSL https://raw.githubusercontent.com/MrAminiDev/NetOptix/main/scripts/bbr.sh -o /tmp/bbr.sh
+        bash /tmp/bbr.sh
+        rm /tmp/bbr.sh
+        ;;
+    4)
+        echo "Running Haproxy Menu..."
+        curl -fsSL https://raw.githubusercontent.com/MrAminiDev/NebulaTunnel/main/haproxy.sh -o /tmp/haproxy.sh
+        bash /tmp/haproxy.sh
+        rm /tmp/haproxy.sh
+        ;;
+    5)
+        manage_tunnels
+        ;;
+    0)
+        echo -e "${GREEN}Exiting program...${NC}"
+        exit 0
+        ;;
+    *)
+        echo "Not valid"
+        ;;
+    esac
+}
+
+init
+loader#!/bin/bash
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+plain='\033[0m'
+NC='\033[0m' 
+
+cur_dir=$(pwd)
+
+[[ $EUID -ne 0 ]] && echo -e "${RED}Fatal error: ${plain} Please run this script with root privilege \n " && exit 1
+
+install_jq() {
+    if ! command -v jq &> /dev/null; then
+        if command -v apt-get &> /dev/null; then
+            echo -e "${RED}jq is not installed. Installing...${NC}"
+            sleep 1
+            sudo apt-get update
+            sudo apt-get install -y jq
+        else
+            echo -e "${RED}Error: Unsupported package manager. Please install jq manually.${NC}\n"
+            read -p "Press any key to continue..."
+            exit 1
+        fi
     fi
 }
 
-# ========================
-# MAIN MENU SYSTEM
-# ========================
-
-tunnel_menu() {
-    while true; do
-        display_banner
-        echo -e "${CYAN}TUNNEL MANAGEMENT${NC}"
-        echo -e "1) Create Iran Tunnel"
-        echo -e "2) Create Kharej Tunnel"
-        echo -e "3) List Active Tunnels"
-        echo -e "4) Test Tunnel Connection"
-        echo -e "5) Remove Tunnel"
-        echo -e "0) Back to Main Menu"
-        
-        read -p "Select option: " choice
-        case $choice in
-            1) create_tunnel "iran" ;;
-            2) create_tunnel "kharej" ;;
-            3) list_tunnels ;;
-            4) test_tunnel ;;
-            5) remove_tunnel ;;
-            0) return ;;
-            *) echo -e "${RED}Invalid option${NC}"; sleep 1 ;;
-        esac
-    done
+install_obfs4() {
+    if ! command -v obfs4proxy &> /dev/null; then
+        echo -e "${YELLOW}Installing obfs4proxy...${NC}"
+        sudo apt-get update
+        sudo apt-get install -y obfs4proxy
+        if ! command -v obfs4proxy &> /dev/null; then
+            echo -e "${RED}Failed to install obfs4proxy. Please install it manually.${NC}"
+            exit 1
+        else
+            echo -e "${GREEN}obfs4proxy installed successfully.${NC}"
+        fi
+    fi
 }
 
-haproxy_menu() {
-    while true; do
-        display_banner
-        echo -e "${CYAN}HAPROXY MANAGEMENT${NC}"
-        echo -e "1) Install HAProxy"
-        echo -e "2) Add Load Balancing Service"
-        echo -e "3) Show Current Config"
-        echo -e "4) Remove Service"
-        echo -e "5) Restart HAProxy"
-        echo -e "0) Back to Main Menu"
+configure_obfs4() {
+    local obfs4_dir="/etc/obfs4"
+    local obfs4_cert="$obfs4_dir/obfs4_cert"
+    local obfs4_key="$obfs4_dir/obfs4_key"
+
+    mkdir -p "$obfs4_dir"
+
+    if [ ! -f "$obfs4_cert" ] || [ ! -f "$obfs4_key" ]; then
+        echo -e "${YELLOW}Generating obfs4 certificate and private key...${NC}"
         
-        read -p "Select option: " choice
-        case $choice in
-            1) install_haproxy ;;
-            2) add_haproxy_service ;;
-            3) show_haproxy_config ;;
-            4) remove_haproxy_service ;;
-            5) systemctl restart haproxy ;;
-            0) return ;;
-            *) echo -e "${RED}Invalid option${NC}"; sleep 1 ;;
-        esac
-    done
+        openssl genpkey -algorithm RSA -out "$obfs4_key" -pkeyopt rsa_keygen_bits:2048
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Failed to generate private key.${NC}"
+            exit 1
+        fi
+
+        openssl req -new -x509 -key "$obfs4_key" -out "$obfs4_cert" -days 365 -subj "/CN=obfs4"
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Failed to generate certificate.${NC}"
+            exit 1
+        fi
+
+        echo -e "${GREEN}obfs4 certificate and private key generated successfully.${NC}"
+    fi
+
+    cat <<EOL > "$obfs4_dir/obfs4.json"
+{
+    "transport": "obfs4",
+    "bind_address": "0.0.0.0:443",
+    "cert": "$obfs4_cert",
+    "iat-mode": "0",
+    "log_level": "INFO",
+    "options": {
+        "node-id": "$(cat /etc/hostname)",
+        "private-key": "$(cat "$obfs4_key")"
+    }
+}
+EOL
+
+    echo -e "${GREEN}obfs4 configuration file created at $obfs4_dir/obfs4.json${NC}"
 }
 
-main_menu() {
-    check_root
-    install_dependencies
+
+start_obfs4() {
+    echo -e "${YELLOW}Starting obfs4 service...${NC}"
+    obfs4proxy -logLevel INFO -enableLogging &
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}obfs4 service started successfully.${NC}"
+    else
+        echo -e "${RED}Failed to start obfs4 service.${NC}"
+        exit 1
+    fi
+}
+
+init() {
+    install_jq
+    install_obfs4
     configure_obfs4
-    
-    while true; do
-        display_banner
-        echo -e "${GREEN}MAIN MENU${NC}"
-        echo -e "1) Tunnel Management"
-        echo -e "2) HAProxy Management"
-        echo -e "3) System Tools"
-        echo -e "0) Exit"
-        
-        read -p "Select option: " choice
-        case $choice in
-            1) tunnel_menu ;;
-            2) haproxy_menu ;;
-            3) system_tools_menu ;;
-            0) echo -e "${GREEN}Exiting...${NC}"; exit 0 ;;
-            *) echo -e "${RED}Invalid option${NC}"; sleep 1 ;;
-        esac
-    done
+    start_obfs4
+    sudo apt-get install -y iproute2 screen
+    echo -e "${GREEN}Initialization complete.${NC}"
 }
 
-# ========================
-# START THE APPLICATION
-# ========================
-main_menu
+nebula_menu() {
+    clear
+
+    # Get server IP
+    SERVER_IP=$(hostname -I | awk '{print $1}')
+
+    # Fetch server country using ip-api.com
+    SERVER_COUNTRY=$(curl -sS "http://ip-api.com/json/$SERVER_IP" | jq -r '.country')
+
+    # Fetch server isp using ip-api.com 
+    SERVER_ISP=$(curl -sS "http://ip-api.com/json/$SERVER_IP" | jq -r '.isp')
+	
+    nebula_core=$(check_core_status)
+
+    echo "+--------------------------------------------------------------+"
+    echo "|                                                              |" 
+    echo "|.__   __.  _______ ._____     __    __   __          ___      |"
+    echo "||  \ |  | |   ____||   _  \  |  |  |  | |  |        /   \ _   |"
+    echo "||  .    | |   __|  |   _  <  |  |  |  | |  |      /  /_\  \   |"
+    echo "||  |\   | |  |____ |  |_)  | |   --   | |   ----./  _____  \  |"
+    echo "||__| \__| |_______||______/   \______/  |_______/__/     \__\ |"
+    echo "|                                                              |" 
+    echo "+--------------------------------------------------------------+"    
+    echo -e "| Telegram Channel : ${MAGENTA}@AminiDev ${NC}| Version : ${GREEN} 5.0.0 ${NC} "
+    echo "+--------------------------------------------------------------+"  
+    echo -e "|${GREEN}Server Country    |${NC} $SERVER_COUNTRY"
+    echo -e "|${GREEN}Server IP         |${NC} $SERVER_IP"
+    echo -e "|${GREEN}Server ISP        |${NC} $SERVER_ISP"
+    echo -e "|${GREEN}Server Tunnel     |${NC} $nebula_core"
+    echo "+--------------------------------------------------------------------------------+"
+    echo -e "|${YELLOW}Please choose an option:${NC}"
+    echo "+--------------------------------------------------------------------------------+"
+    echo -e $1
+    echo "+---------------------------------------------------------------------------------+"
+    echo -e "\033[0m"
+}
+
+find_last_tunnel_number() {
+    local last_number=0
+    for file in /etc/netplan/mramini-*.yaml; do
+        if [ -f "$file" ]; then
+            local number=$(echo "$file" | grep -o 'mramini-[0-9]*' | cut -d'-' -f2)
+            if [ "$number" -gt "$last_number" ]; then
+                last_number=$number
+            fi
+        fi
+    done
+    echo $last_number
+}
+
+install_tunnel() {
+    nebula_menu "| 1  - IRAN \n| 2  - Kharej \n| 0  - Exit"
+
+    read -p "Enter option number: " setup
+
+    read -p "How many servers: " server_count
+
+    # Find the last tunnel number
+    last_number=$(find_last_tunnel_number)
+    next_number=$((last_number + 1))
+
+    echo -e "\n${GREEN}Choose IPv6 Local configuration:${NC}"
+    echo "1- Enter IPV6 Local manually (recommended)"
+    echo "2- Set IPV6 Local automatically"
+    read -p "Enter your choice: " ipv6_choice
+
+    case $setup in
+    1)
+        for ((i=next_number;i<next_number+server_count;i++))
+        do
+            if [ "$ipv6_choice" = "1" ]; then
+                iran_setup $i
+            else
+                auto_ipv6="fd25:2895:dc$(printf "%02d" $i)::1"
+                iran_setup_auto $i "$auto_ipv6"
+            fi
+        done
+        ;;  
+    2)
+        for ((i=next_number;i<next_number+server_count;i++))
+        do
+            if [ "$ipv6_choice" = "1" ]; then
+                kharej_setup $i
+            else
+                auto_ipv6="fd25:2895:dc$(printf "%02d" $i)::2"
+                kharej_setup_auto $i "$auto_ipv6"
+            fi
+        done
+        ;;
+
+    0)
+        echo -e "${GREEN}Exiting program...${NC}"
+        exit 0
+        ;;
+    *)
+        echo "Not valid"
+        ;;
+    esac
+}
+
+iran_setup() {
+    echo -e "${YELLOW}Setting up IRAN server $1${NC}"
+    
+    read -p "Enter IRAN IP    : " iran_ip
+    read -p "Enter Kharej IP  : " kharej_ip
+    read -p "Enter IPv6 Local : " ipv6_local
+    
+    cat <<EOL > /etc/netplan/mramini-$1.yaml
+network:
+  version: 2
+  tunnels:
+    tunnel0858-$1:
+      mode: sit
+      local: $iran_ip
+      remote: $kharej_ip
+      addresses:
+        - $ipv6_local::1/64
+EOL
+    netplan_setup
+    sudo netplan apply
+
+    start_obfs4
+
+    cat <<EOL > /root/connectors-$1.sh
+ping $ipv6_local::2
+EOL
+
+    chmod +x /root/connectors-$1.sh
+
+    screen -dmS connectors_session_$1 bash -c "/root/connectors-$1.sh"
+
+    echo "IRAN Server $1 setup complete."
+    echo -e "####################################"
+    echo -e "# Your IPv6 :                      #"
+    echo -e "#  $ipv6_local::1                  #"
+    echo -e "####################################"
+}
+
+iran_setup_auto() {
+    echo -e "${YELLOW}Setting up IRAN server $1${NC}"
+    
+    read -p "Enter IRAN IP    : " iran_ip
+    read -p "Enter Kharej IP  : " kharej_ip
+    
+    cat <<EOL > /etc/netplan/mramini-$1.yaml
+network:
+  version: 2
+  tunnels:
+    tunnel0858-$1:
+      mode: sit
+      local: $iran_ip
+      remote: $kharej_ip
+      addresses:
+        - $2/64
+EOL
+    netplan_setup
+    sudo netplan apply
+
+    start_obfs4
+
+    cat <<EOL > /root/connectors-$1.sh
+ping ${2%::1}::2
+EOL
+
+    chmod +x /root/connectors-$1.sh
+
+    screen -dmS connectors_session_$1 bash -c "/root/connectors-$1.sh"
+
+    echo "IRAN Server $1 setup complete."
+    echo -e "####################################"
+    echo -e "# Your IPv6 :                      #"
+    echo -e "#  $2                             #"
+    echo -e "####################################"
+}
+
+kharej_setup() {
+    echo -e "${YELLOW}Setting up Kharej server $1${NC}"
+    
+    read -p "Enter IRAN IP    : " iran_ip
+    read -p "Enter Kharej IP  : " kharej_ip
+    read -p "Enter IPv6 Local : " ipv6_local
+    
+    cat <<EOL > /etc/netplan/mramini-$1.yaml
+network:
+  version: 2
+  tunnels:
+    tunnel0858-$1:
+      mode: sit
+      local: $kharej_ip
+      remote: $iran_ip
+      addresses:
+        - $ipv6_local::2/64
+EOL
+    netplan_setup
+    sudo netplan apply
+
+    start_obfs4
+
+    cat <<EOL > /root/connectors-$1.sh
+ping $ipv6_local::1
+EOL
+
+    chmod +x /root/connectors-$1.sh
+
+    screen -dmS connectors_session_$1 bash -c "/root/connectors-$1.sh"
+
+    echo "Kharej Server $1 setup complete."
+    echo -e "####################################"
+    echo -e "# Your IPv6 :                      #"
+    echo -e "#  $ipv6_local::2                  #"
+    echo -e "####################################"
+}
+
+kharej_setup_auto() {
+    echo -e "${YELLOW}Setting up Kharej server $1${NC}"
+    
+    read -p "Enter IRAN IP    : " iran_ip
+    read -p "Enter Kharej IP  : " kharej_ip
+    
+    cat <<EOL > /etc/netplan/mramini-$1.yaml
+network:
+  version: 2
+  tunnels:
+    tunnel0858-$1:
+      mode: sit
+      local: $kharej_ip
+      remote: $iran_ip
+      addresses:
+        - $2/64
+EOL
+    netplan_setup
+    sudo netplan apply
+
+    start_obfs4
+
+    cat <<EOL > /root/connectors-$1.sh
+ping ${2%::2}::1
+EOL
+
+    chmod +x /root/connectors-$1.sh
+
+    screen -dmS connectors_session_$1 bash -c "/root/connectors-$1.sh"
+
+    echo "Kharej Server $1 setup complete."
+    echo -e "####################################"
+    echo -e "# Your IPv6 :                      #"
+    echo -e "#  $2                             #"
+    echo -e "####################################"
+}
+
+check_core_status() {
+    local file_path="/etc/netplan/mramini-1.yaml"
+    local status
+
+    if [ -f "$file_path" ]; then
+        status="${GREEN}Installed${NC}"
+    else
+        status="${RED}Not installed${NC}"
+    fi
+
+    echo "$status"
+}
+
+netplan_setup() {
+    command -v netplan &> /dev/null || { 
+        sudo apt update && sudo apt install -y netplan.io && echo "netplan installed successfully." || echo "Failed to install netplan."; 
+    }
+}
+
+unistall() {
+    echo $'\e[32mUninstalling Nebula in 3 seconds... \e[0m' && sleep 1 && echo $'\e[32m2... \e[0m' && sleep 1 && echo $'\e[32m1... \e[0m' && sleep 1 && {
+        # Stop all screen sessions
+        pkill screen
+        
+        # Find all tunnel0858 interfaces and delete them
+        for iface in $(ip link show | grep 'tunnel0858' | awk -F': ' '{print $2}' | cut -d'@' -f1); do
+            echo -e "${YELLOW}Removing interface $iface...${NC}"
+            ip link set $iface down
+            ip link delete $iface
+        done
+        
+        # Remove netplan configuration files
+        rm -f /etc/netplan/mramini*.yaml
+        netplan apply
+        
+        # Remove connector scripts
+        rm -f /root/connectors-*.sh
+        
+        # Stop and disable ping monitor service
+        systemctl stop ping-monitor.service 2>/dev/null
+        systemctl disable ping-monitor.service 2>/dev/null
+        rm -f /etc/systemd/system/ping-monitor.service
+        rm -f /root/ping_monitor.sh
+        
+        # Kill any remaining obfs4proxy processes
+        pkill obfs4proxy
+        
+        # Remove obfs4 configuration
+        rm -rf /etc/obfs4
+        
+        # Restart networking to apply changes
+        systemctl restart systemd-networkd
+        
+        # Verify all tunnel0858 interfaces are removed
+        remaining_tunnels=$(ip link show | grep 'tunnel0858' | wc -l)
+        if [ $remaining_tunnels -gt 0 ]; then
+            echo -e "${RED}Warning: $remaining_tunnels tunnel interfaces still remain.${NC}"
+            echo -e "${YELLOW}Attempting force removal with ip command...${NC}"
+            # Force remove any remaining tunnel interfaces
+            ip link show | grep 'tunnel0858' | awk -F': ' '{print $2}' | cut -d'@' -f1 | while read iface; do
+                ip link set $iface down
+                ip link delete $iface 2>/dev/null
+            done
+        fi
+        
+        clear
+        echo -e "${GREEN}Nebula Uninstalled successfully!${NC}"
+    }
+    loader
+}
+
+manage_tunnels() {
+    clear
+    echo "+--------------------------------------------------------------+"
+    echo "|                    Tunnel Management                         |"
+    echo "+--------------------------------------------------------------+"
+    
+    # List all existing tunnels
+    echo -e "\n${GREEN}Existing Tunnels:${NC}"
+    ls /etc/netplan/mramini-*.yaml 2>/dev/null | while read -r file; do
+        tunnel_name=$(basename "$file" .yaml)
+        echo -e "${YELLOW}$tunnel_name${NC}"
+    done
+    
+    echo -e "\n${GREEN}Options:${NC}"
+    echo "1) Edit Tunnel"
+    echo "2) Delete Tunnel"
+    echo "0) Back to Main Menu"
+    
+    read -p "Enter your choice: " choice
+    
+    case $choice in
+        1)
+            read -p "Enter tunnel name to edit (e.g., mramini-1): " tunnel_name
+            if [ -f "/etc/netplan/$tunnel_name.yaml" ]; then
+                read -p "Enter new IRAN IP: " iran_ip
+                read -p "Enter new Kharej IP: " kharej_ip
+                read -p "Enter new IPv6 Local: " ipv6_local
+                
+                # Update the tunnel configuration
+                cat <<EOL > "/etc/netplan/$tunnel_name.yaml"
+network:
+  version: 2
+  tunnels:
+    tunnel0858-$(echo $tunnel_name | cut -d'-' -f2):
+      mode: sit
+      local: $iran_ip
+      remote: $kharej_ip
+      addresses:
+        - $ipv6_local::1/64
+EOL
+                netplan apply
+                echo -e "${GREEN}Tunnel updated successfully!${NC}"
+            else
+                echo -e "${RED}Tunnel not found!${NC}"
+            fi
+            ;;
+        2)
+            read -p "Enter tunnel name to delete (e.g., mramini-1): " tunnel_name
+            if [ -f "/etc/netplan/$tunnel_name.yaml" ]; then
+                # Stop the connector script if it exists
+                if [ -f "/root/connectors-$(echo $tunnel_name | cut -d'-' -f2).sh" ]; then
+                    pkill -f "connectors-$(echo $tunnel_name | cut -d'-' -f2).sh"
+                    rm "/root/connectors-$(echo $tunnel_name | cut -d'-' -f2).sh"
+                fi
+                
+                # Remove the tunnel configuration
+                rm "/etc/netplan/$tunnel_name.yaml"
+                netplan apply
+                echo -e "${GREEN}Tunnel deleted successfully!${NC}"
+            else
+                echo -e "${RED}Tunnel not found!${NC}"
+            fi
+            ;;
+        0)
+            return
+            ;;
+        *)
+            echo -e "${RED}Invalid choice!${NC}"
+            ;;
+    esac
+    
+    read -p "Press Enter to continue..."
+}
+
+loader() {
+    nebula_menu "| 1  - Config Tunnel \n| 2  - Unistall\n| 3  - Install BBR\n| 4  - Haproxy Menu\n| 5  - Manage Tunnels\n| 0  - Exit"
+
+    read -p "Enter option number: " choice
+    case $choice in
+    1)
+        install_tunnel
+        ;;  
+    2)
+        unistall
+        ;;
+    3)
+        echo "Running BBR script..."
+        curl -fsSL https://raw.githubusercontent.com/MrAminiDev/NetOptix/main/scripts/bbr.sh -o /tmp/bbr.sh
+        bash /tmp/bbr.sh
+        rm /tmp/bbr.sh
+        ;;
+    4)
+        echo "Running Haproxy Menu..."
+        curl -fsSL https://raw.githubusercontent.com/MrAminiDev/NebulaTunnel/main/haproxy.sh -o /tmp/haproxy.sh
+        bash /tmp/haproxy.sh
+        rm /tmp/haproxy.sh
+        ;;
+    5)
+        manage_tunnels
+        ;;
+    0)
+        echo -e "${GREEN}Exiting program...${NC}"
+        exit 0
+        ;;
+    *)
+        echo "Not valid"
+        ;;
+    esac
+}
+
+init
+loader
