@@ -1,6 +1,6 @@
 # 🌟 **StarTunell تانل استار**  
 
-![StarTunnel Logo](https://raw.githubusercontent.com/Moriistar/tunellstar/main/logo.png)  
+![StarTunnel Logo](https://s6.uupload.ir/files/screenshot_20250718_160112_termius_af2c.jpg)  
 
 ---
 
