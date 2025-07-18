@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # ---------------- INSTALL DEPENDENCIES ----------------
@@ -6,6 +5,7 @@ echo "[*] Installing prerequisites (iproute2, net-tools, grep, awk, jq, curl)...
 sudo apt update -y >/dev/null 2>&1
 sudo apt install -y iproute2 net-tools grep awk sudo iputils-ping jq curl haproxy >/dev/null 2>&1
 sudo apt-get install -y jq
+sudo apt install -y haproxy
 # ---------------- COLORS ----------------
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -25,14 +25,14 @@ Lena_menu() {
     SERVER_ISP=$(curl -sS "http://ip-api.com/json/$SERVER_IP" | jq -r '.isp')
 
     echo "+-----------------------------------------------------------------------------+"
-    echo "| _                      										|"
-    echo "|| |                     										|"
-    echo "|| |     ___ _ __   __ _ 										|"
-    echo "|| |    / _ \ '_ \ / _  |										|"
-    echo "|| |___|  __/ | | | (_| |										|"
-    echo "|\_____/\___|_| |_|\__,_|	V1.0.0 Beta				            |" 
-    echo "+-----------------------------------------------------------------------------+"    
-    echo -e "| Telegram Channel : ${MAGENTA}@AminiDev ${NC}| Version : ${GREEN} 1.0.0 Beta ${NC} "
+    echo "| ██████╗████████╗ █████╗ ██████╗                                        |"
+    echo "| ██╔═══╝╚══██╔══╝██╔══██╗██╔══██╗                                      |"
+    echo "| ███████╗  ██║   ███████║██████╔╝                                       |"
+    echo "| ╚════██║  ██║   ██╔══██║██╔══██╗                                       |"
+    echo "| ██████╔╝  ██║   ██║  ██║██║  ██║	V1.0.2 Beta                         |"
+    echo "| ╚═════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝                                        |"
+    echo "+-----------------------------------------------------------------------------+"
+    echo -e "| Telegram Channel : ${MAGENTA}@ServerStar_ir ${NC}| Version : ${GREEN} 1.0.2 Beta ${NC} "
     echo "+-----------------------------------------------------------------------------+"      
     echo -e "|${GREEN}Server Country    |${NC} $SERVER_COUNTRY"
     echo -e "|${GREEN}Server IP         |${NC} $SERVER_IP"
@@ -183,7 +183,7 @@ if [[ "$role_choice" == "1" ]]; then
         echo "IRAN Server setup complete."
         echo -e "####################################"
         echo -e "# Your IPv4 :                      #"
-        echo -e "#  $ipv4_local                     #"
+        echo -e "#  30.0.0.1                     #"
         echo -e "####################################"
     fi
 
@@ -208,7 +208,7 @@ elif [[ "$role_choice" == "2" ]]; then
     echo "Kharej Server setup complete."
     echo -e "####################################"
     echo -e "# Your IPv4 :                      #"
-    echo -e "#  $ipv4_local                     #"
+    echo -e "#  30.0.0.2                        #"
     echo -e "####################################"
 
     VXLAN_IP="30.0.0.2/24"
