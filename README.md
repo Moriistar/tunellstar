@@ -1,5 +1,5 @@
-تانل استار Star Tunnel
- #StarTunnel v3.0
+# STAR TUNNEL ☆ تانل استار 
+ #updete v3.0
 
 ## 🚀 **قابلیت‌های جدید اضافه شده:**
 
