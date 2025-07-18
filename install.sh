@@ -34,17 +34,16 @@ StarTunnel_menu() {
     SERVER_ISP=$(curl -sS "http://ip-api.com/json/$SERVER_IP" | jq -r '.isp')
 
     echo "+-----------------------------------------------------------------------------+"
-MAGENTA='\033[1;35m'
-NC='\033[0m' # No Color
-
-echo -e "${MAGENTA}╔═══╦════╦═══╦═══╗╔════╦╗─╔╦═╗─╔╦═══╦╗──╔╗${NC}"
-echo -e "${MAGENTA}║╔═╗║╔╗╔╗║╔═╗║╔═╗║║╔╗╔╗║║─║║║╚╗║║╔══╣║──║║${NC}"
-echo -e "${MAGENTA}║╚══╬╝║║╚╣║─║║╚═╝║╚╝║║╚╣║─║║╔╗╚╝║╚══╣║──║║${NC}"
-echo -e "${MAGENTA}╚══╗║─║║─║╚═╝║╔╗╔╝──║║─║║─║║║╚╗║║╔══╣║─╔╣║─╔╗${NC}"
-echo -e "${MAGENTA}║╚═╝║─║║─║╔═╗║║║╚╗──║║─║╚═╝║║─║║║╚══╣╚═╝║╚═╝║${NC}"
-echo -e "${MAGENTA}╚═══╝─╚╝─╚╝─╚╩╝╚═╝──╚╝─╚═══╩╝─╚═╩═══╩═══╩═══╝${NC}" 
+TURQUOISE='\033[38;5;45m'
+NC='\033[0m'
+echo -e "${TURQUOISE}    ╔═══╦════╦═══╦═══╗        ╔════╦╗─╔╦═╗─╔╦═══╦╗──╔╗${NC}"
+echo -e "${TURQUOISE}    ║╔═╗║╔╗╔╗║╔═╗║╔═╗║        ║╔╗╔╗║║─║║║╚╗║║╔══╣║──║║${NC}"
+echo -e "${TURQUOISE}    ║╚══╬╝║║╚╣║─║║╚═╝║        ╚╝║║╚╣║─║║╔╗╚╝║╚══╣║──║║${NC}"
+echo -e "${TURQUOISE}    ╚══╗║─║║─║╚═╝║╔╗╔╝        ──║║─║║─║║║╚╗║║╔══╣║─╔╣║─╔╗${NC}"
+echo -e "${TURQUOISE}    ║╚═╝║─║║─║╔═╗║║║╚╗        ──║║─║╚═╝║║─║║║╚══╣╚═╝║╚═╝║${NC}"
+echo -e "${TURQUOISE}    ╚═══╝─╚╝─╚╝─╚╩╝╚═╝        ──╚╝─╚═══╩╝─╚═╩═══╩═══╩═══╝${NC}" 
 echo "+-----------------------------------------------------------------------------+"
-    echo -e "| Telegram Channel : ${MAGENTA}@ServerStar_ir ${NC}| Version : ${GREEN} 1.0.2 Beta ${NC} "
+    echo -e "| Telegram Channel : ${RED}@ServerStar_ir ${NC}| Version : ${GREEN} 1.0.2 Beta ${NC} "
     echo "+-----------------------------------------------------------------------------+"      
     echo -e "|${GREEN}Server Country    |${NC} $SERVER_COUNTRY"
     echo -e "|${GREEN}Server IP         |${NC} $SERVER_IP"
