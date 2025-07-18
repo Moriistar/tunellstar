@@ -5,7 +5,9 @@
 bash <(curl -Ls https://raw.githubusercontent.com/Moriistar/tunellstar/main/install.sh)
 ```
 🚀 قابلیت‌های جدید اضافه شده:
+
 ✨ تغییرات اصلی:
+
 🔄 تغییر نام کامل از Lena به StarTunnel در تمام بخش‌ها
 🎨 لوگوی جدید ASCII برای StarTunnel
 📱 کانال تلگرام به @ServerStar_ir تغییر کرده
