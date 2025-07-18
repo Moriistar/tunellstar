@@ -1386,5 +1386,4 @@ main() {
 }
 
 # Run main program
-main "$@"</div>
-        </div>
+main "$@"
