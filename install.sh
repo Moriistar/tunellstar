@@ -1,16 +1,134 @@
-#!/bin/bash
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarTunnel v3.0 - Advanced VxLAN Tunnel Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .code-container {
+            background: #1a1a1a;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            overflow-x: auto;
+            white-space: pre;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: none;
+        }
+        .bash-comment { color: #75715e; }
+        .bash-string { color: #e6db74; }
+        .bash-keyword { color: #f92672; }
+        .bash-function { color: #a6e22e; }
+        .bash-variable { color: #fd971f; }
+        .header-gradient {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+        .install-command {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold mb-4 header-gradient">
+                <i class="fas fa-network-wired"></i> StarTunnel v3.0
+            </h1>
+            <p class="text-xl text-gray-300 mb-4">Advanced VxLAN Tunnel Manager</p>
+            <p class="text-lg text-blue-400">
+                <i class="fab fa-telegram"></i> @ServerStar_ir | 
+                <i class="fas fa-star"></i> Enhanced & Upgraded
+            </p>
+        </div>
+
+        <!-- Installation Command -->
+        <div class="install-command">
+            <i class="fas fa-terminal"></i> نصب با دستور زیر:
+            <br><br>
+            <code>bash &lt;(curl -Ls https://raw.githubusercontent.com/Moriistar/tunellstar/main/install.sh)</code>
+        </div>
+
+        <!-- New Features -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="feature-card">
+                <h3 class="text-xl font-bold mb-3 text-yellow-400">
+                    <i class="fas fa-globe"></i> IPv6 لوکال
+                </h3>
+                <p class="text-gray-300">پشتیبانی کامل از IPv6 لوکال با استفاده از RFC 4193 و تولید خودکار آدرس‌های یکتا</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="text-xl font-bold mb-3 text-green-400">
+                    <i class="fas fa-sitemap"></i> تانل همزمان
+                </h3>
+                <p class="text-gray-300">قابلیت اتصال چندین سرور ایران به یک سرور خارج به صورت موازی</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="text-xl font-bold mb-3 text-blue-400">
+                    <i class="fas fa-cogs"></i> HAProxy پیشرفته
+                </h3>
+                <p class="text-gray-300">منو تعاملی برای مدیریت HAProxy و load balancing هوشمند</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="text-xl font-bold mb-3 text-purple-400">
+                    <i class="fas fa-sync-alt"></i> ارتقا خودکار
+                </h3>
+                <p class="text-gray-300">سیستم خودکار بررسی و نصب آپدیت‌های جدید</p>
+            </div>
+        </div>
+
+        <!-- Main Code -->
+        <div class="code-container">
+            <div class="bg-gray-800 px-6 py-4 rounded-t-lg">
+                <h2 class="text-xl font-bold text-white">
+                    <i class="fas fa-code"></i> StarTunnel v3.0 - کد کامل
+                </h2>
+            </div>
+            <div class="code-block">#!/bin/bash
 
 # ============================================================================
-# Lena Tunnel v2.0 - Advanced VxLAN Tunnel Manager
+# StarTunnel v3.0 - Advanced VxLAN Tunnel Manager
 # Developed by: Moriistar
 # Channel: @ServerStar_ir
-# Features: IPv4/IPv6 Support, Multi-tunnel, Load Balancing
+# Features: IPv4/IPv6 Local Support, Multi-tunnel, Load Balancing, Auto-Update
 # ============================================================================
 
 # ---------------- DEPENDENCIES ----------------
 echo "[*] Installing prerequisites..."
 sudo apt update -y >/dev/null 2>&1
-sudo apt install -y iproute2 net-tools grep awk sudo iputils-ping jq curl haproxy systemd >/dev/null 2>&1
+sudo apt install -y iproute2 net-tools grep awk sudo iputils-ping jq curl haproxy systemd openssl >/dev/null 2>&1
 
 # ---------------- COLORS ----------------
 GREEN='\033[0;32m'
@@ -19,13 +137,18 @@ MAGENTA='\033[0;35m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
+WHITE='\033[1;37m'
 NC='\033[0m'
 
 # ---------------- GLOBAL VARIABLES ----------------
-CONFIG_DIR="/etc/lena-tunnel"
+SCRIPT_VERSION="3.0"
+CONFIG_DIR="/etc/star-tunnel"
 TUNNEL_CONFIG="$CONFIG_DIR/tunnels.json"
-SERVICE_PREFIX="lena-tunnel"
-LOG_FILE="/var/log/lena-tunnel.log"
+HAPROXY_CONFIG="$CONFIG_DIR/haproxy.json"
+SERVICE_PREFIX="star-tunnel"
+LOG_FILE="/var/log/star-tunnel.log"
+UPDATE_URL="https://raw.githubusercontent.com/Moriistar/tunellstar/main/install.sh"
+GITHUB_API="https://api.github.com/repos/Moriistar/tunellstar/releases/latest"
 
 # Create config directory
 mkdir -p "$CONFIG_DIR"
@@ -33,6 +156,26 @@ mkdir -p "$CONFIG_DIR"
 # ---------------- LOGGING ----------------
 log_message() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
+
+# ---------------- IPv6 LOCAL ADDRESS GENERATION ----------------
+generate_ipv6_local() {
+    # Generate RFC 4193 compliant IPv6 local address
+    local prefix="fd"
+    local global_id=$(openssl rand -hex 5)
+    local subnet_id="0001"
+    
+    # Format: fdxx:xxxx:xxxx:0001::/64
+    echo "${prefix}${global_id:0:2}:${global_id:2:4}:${global_id:6:4}:${subnet_id}::/64"
+}
+
+get_ipv6_local_address() {
+    local prefix=$1
+    local host_id=$2
+    
+    # Extract network part and add host ID
+    local network_part=$(echo "$prefix" | cut -d':' -f1-4)
+    echo "${network_part}::${host_id}/64"
 }
 
 # ---------------- UTILITY FUNCTIONS ----------------
@@ -52,7 +195,7 @@ get_local_ip() {
     if [[ "$version" == "ipv4" ]]; then
         hostname -I | awk '{print $1}'
     else
-        ip -6 addr show scope global | grep -oP '(?<=inet6\s)[\da-f:]+' | head -1
+        ip -6 addr show scope global | grep -oP '(?&lt;=inet6\s)[\da-f:]+' | head -1 || echo "::1"
     fi
 }
 
@@ -61,22 +204,39 @@ check_tunnel_status() {
     systemctl is-active --quiet "${SERVICE_PREFIX}-${tunnel_name}.service" && echo "Active" || echo "Inactive"
 }
 
+check_for_updates() {
+    local current_version="$SCRIPT_VERSION"
+    local latest_version=$(curl -s "$GITHUB_API" | jq -r '.tag_name // "3.0"' 2>/dev/null)
+    
+    if [[ "$latest_version" != "$current_version" ]]; then
+        echo "update_available"
+    else
+        echo "up_to_date"
+    fi
+}
+
 # ---------------- MENU FUNCTIONS ----------------
 show_header() {
     clear
     SERVER_IP=$(hostname -I | awk '{print $1}')
     SERVER_COUNTRY=$(curl -sS "http://ip-api.com/json/$SERVER_IP" 2>/dev/null | jq -r '.country // "Unknown"')
     SERVER_ISP=$(curl -sS "http://ip-api.com/json/$SERVER_IP" 2>/dev/null | jq -r '.isp // "Unknown"')
+    UPDATE_STATUS=$(check_for_updates)
 
     echo "+-----------------------------------------------------------------------------+"
-    echo "| ██╗     ███████╗███╗   ██╗ █████╗     ██╗   ██╗██████╗    ██████╗        |"
-    echo "| ██║     ██╔════╝████╗  ██║██╔══██╗    ██║   ██║╚════██╗  ██╔═████╗       |"
-    echo "| ██║     █████╗  ██╔██╗ ██║███████║    ██║   ██║ █████╔╝  ██║██╔██║       |"
-    echo "| ██║     ██╔══╝  ██║╚██╗██║██╔══██║    ╚██╗ ██╔╝██╔═══╝   ████╔╝██║       |"
-    echo "| ███████╗███████╗██║ ╚████║██║  ██║     ╚████╔╝ ███████╗██╗╚██████╔╝       |"
-    echo "| ╚══════╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝      ╚═══╝  ╚══════╝╚═╝ ╚═════╝        |"
+    echo "| ███████╗████████╗ █████╗ ██████╗     ████████╗██╗   ██╗███╗   ██╗███╗   ██╗|"
+    echo "| ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗    ╚══██╔══╝██║   ██║████╗  ██║████╗  ██║|"
+    echo "| ███████╗   ██║   ███████║██████╔╝       ██║   ██║   ██║██╔██╗ ██║██╔██╗ ██║|"
+    echo "| ╚════██║   ██║   ██╔══██║██╔══██╗       ██║   ██║   ██║██║╚██╗██║██║╚██╗██║|"
+    echo "| ███████║   ██║   ██║  ██║██║  ██║       ██║   ╚██████╔╝██║ ╚████║██║ ╚████║|"
+    echo "| ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝       ╚═╝    ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝|"
     echo "+-----------------------------------------------------------------------------+"
-    echo -e "| Telegram: ${MAGENTA}@ServerStar_ir${NC} | Version: ${GREEN}2.0 Advanced${NC} | Status: ${CYAN}Enhanced${NC}"
+    echo -e "| Telegram: ${MAGENTA}@ServerStar_ir${NC} | Version: ${GREEN}$SCRIPT_VERSION Advanced${NC}"
+    if [[ "$UPDATE_STATUS" == "update_available" ]]; then
+        echo -e "| Status: ${YELLOW}آپدیت جدید موجود است!${NC}"
+    else
+        echo -e "| Status: ${GREEN}آخرین نسخه${NC}"
+    fi
     echo "+-----------------------------------------------------------------------------+"
     echo -e "|${GREEN}Server Country    |${NC} $SERVER_COUNTRY"
     echo -e "|${GREEN}Server IP         |${NC} $SERVER_IP"
@@ -91,22 +251,25 @@ main_menu() {
     echo -e "1${GREEN}►${NC} Create New Tunnel"
     echo -e "2${BLUE}►${NC} Manage Existing Tunnels"
     echo -e "3${CYAN}►${NC} Monitor Tunnels"
-    echo -e "4${MAGENTA}►${NC} Advanced Settings"
-    echo -e "5${RED}►${NC} Uninstall All Tunnels"
-    echo -e "6${YELLOW}►${NC} Install BBR"
-    echo -e "7${GREEN}►${NC} Exit"
+    echo -e "4${MAGENTA}►${NC} HAProxy Management"
+    echo -e "5${YELLOW}►${NC} Multi-Tunnel Setup"
+    echo -e "6${WHITE}►${NC} Advanced Settings"
+    echo -e "7${RED}►${NC} Uninstall All Tunnels"
+    echo -e "8${GREEN}►${NC} Install BBR"
+    echo -e "9${CYAN}►${NC} Update System"
+    echo -e "0${YELLOW}►${NC} Exit"
     echo "+-----------------------------------------------------------------------------+"
 }
 
 # ---------------- TUNNEL CREATION ----------------
 create_tunnel() {
-    echo -e "${GREEN}Creating New Tunnel${NC}"
-    echo "========================"
+    echo -e "${GREEN}Creating New StarTunnel${NC}"
+    echo "=========================="
     
     # Tunnel name
     read -p "Enter tunnel name: " tunnel_name
     if [[ -z "$tunnel_name" ]]; then
-        tunnel_name="tunnel-$(date +%s)"
+        tunnel_name="star-tunnel-$(date +%s)"
     fi
     
     # Server role selection
@@ -121,31 +284,64 @@ create_tunnel() {
     echo "Select IP version:"
     echo "1) IPv4"
     echo "2) IPv6"
-    echo "3) Auto-detect"
-    read -p "Enter choice (1-3): " ip_version_choice
+    echo "3) IPv4 Local (10.x.x.x)"
+    echo "4) IPv6 Local (fd::/48)"
+    echo "5) Auto-detect"
+    read -p "Enter choice (1-5): " ip_version_choice
     
+    local use_local_ip=false
     case $ip_version_choice in
         1) ip_version="ipv4";;
         2) ip_version="ipv6";;
-        3) ip_version="auto";;
+        3) ip_version="ipv4_local"; use_local_ip=true;;
+        4) ip_version="ipv6_local"; use_local_ip=true;;
+        5) ip_version="auto";;
         *) ip_version="auto";;
     esac
     
     # Get IP addresses
     if [[ "$role_choice" == "1" ]]; then
-        read -p "Enter Iran IP: " iran_ip
-        read -p "Enter Kharej IP: " kharej_ip
+        if [[ "$use_local_ip" == true ]]; then
+            if [[ "$ip_version" == "ipv4_local" ]]; then
+                iran_ip="10.0.0.1"
+                read -p "Enter Kharej IP: " kharej_ip
+                vxlan_ip="192.168.100.1/24"
+            else
+                # IPv6 Local
+                local ipv6_prefix=$(generate_ipv6_local)
+                iran_ip=$(get_ipv6_local_address "$ipv6_prefix" "1")
+                read -p "Enter Kharej IP: " kharej_ip
+                vxlan_ip=$(get_ipv6_local_address "$ipv6_prefix" "100")
+            fi
+        else
+            read -p "Enter Iran IP: " iran_ip
+            read -p "Enter Kharej IP: " kharej_ip
+            vxlan_ip="30.0.0.1/24"
+        fi
         local_role="iran"
         local_ip=$iran_ip
         remote_ip=$kharej_ip
-        vxlan_ip="30.0.0.1/24"
     else
-        read -p "Enter Iran IP: " iran_ip
-        read -p "Enter Kharej IP: " kharej_ip
+        if [[ "$use_local_ip" == true ]]; then
+            if [[ "$ip_version" == "ipv4_local" ]]; then
+                kharej_ip="10.0.0.2"
+                read -p "Enter Iran IP: " iran_ip
+                vxlan_ip="192.168.100.2/24"
+            else
+                # IPv6 Local
+                local ipv6_prefix=$(generate_ipv6_local)
+                kharej_ip=$(get_ipv6_local_address "$ipv6_prefix" "2")
+                read -p "Enter Iran IP: " iran_ip
+                vxlan_ip=$(get_ipv6_local_address "$ipv6_prefix" "200")
+            fi
+        else
+            read -p "Enter Iran IP: " iran_ip
+            read -p "Enter Kharej IP: " kharej_ip
+            vxlan_ip="30.0.0.2/24"
+        fi
         local_role="kharej"
         local_ip=$kharej_ip
         remote_ip=$iran_ip
-        vxlan_ip="30.0.0.2/24"
     fi
     
     # Port selection
@@ -172,7 +368,7 @@ create_tunnel() {
     # Setup tunnel
     setup_tunnel "$tunnel_name"
     
-    echo -e "${GREEN}Tunnel '$tunnel_name' created successfully!${NC}"
+    echo -e "${GREEN}StarTunnel '$tunnel_name' created successfully!${NC}"
     echo -e "${CYAN}Tunnel IP: $vxlan_ip${NC}"
     
     read -p "Press Enter to continue..."
@@ -250,7 +446,14 @@ iptables -I INPUT 1 -p udp --dport \$PORT -j ACCEPT
 iptables -I INPUT 1 -s \$REMOTE_IP -j ACCEPT
 iptables -I INPUT 1 -s \${VXLAN_IP%/*} -j ACCEPT
 
-echo "[$(date)] Tunnel $tunnel_name started successfully" >> "$LOG_FILE"
+# IPv6 firewall rules if needed
+if [[ "\$VXLAN_IP" == *":"* ]]; then
+    ip6tables -I INPUT 1 -p udp --dport \$PORT -j ACCEPT
+    ip6tables -I INPUT 1 -s \$REMOTE_IP -j ACCEPT
+    ip6tables -I INPUT 1 -s \${VXLAN_IP%/*} -j ACCEPT
+fi
+
+echo "[$(date)] StarTunnel $tunnel_name started successfully" >> "$LOG_FILE"
 EOF
     
     chmod +x "/usr/local/bin/setup_${tunnel_name}.sh"
@@ -258,7 +461,7 @@ EOF
     # Create systemd service
     cat <<EOF > "/etc/systemd/system/${SERVICE_PREFIX}-${tunnel_name}.service"
 [Unit]
-Description=Lena Tunnel - $tunnel_name
+Description=StarTunnel - $tunnel_name
 After=network.target
 
 [Service]
@@ -275,7 +478,7 @@ EOF
     cat <<EOF > "/usr/local/bin/cleanup_${tunnel_name}.sh"
 #!/bin/bash
 ip link del vxlan${vni} 2>/dev/null || true
-echo "[$(date)] Tunnel $tunnel_name stopped" >> "$LOG_FILE"
+echo "[$(date)] StarTunnel $tunnel_name stopped" >> "$LOG_FILE"
 EOF
     
     chmod +x "/usr/local/bin/cleanup_${tunnel_name}.sh"
@@ -290,23 +493,267 @@ EOF
         configure_haproxy "$tunnel_name"
     fi
     
-    log_message "Tunnel $tunnel_name setup completed"
+    log_message "StarTunnel $tunnel_name setup completed"
 }
 
-# ---------------- HAPROXY CONFIGURATION ----------------
-configure_haproxy() {
-    local tunnel_name=$1
+# ---------------- MULTI-TUNNEL SETUP ----------------
+multi_tunnel_setup() {
+    echo -e "${GREEN}Multi-Tunnel Setup${NC}"
+    echo "=================="
     
-    echo "Configuring HAProxy for tunnel: $tunnel_name"
-    read -p "Enter ports for forwarding (comma-separated): " ports
+    read -p "Enter number of Iran servers: " iran_count
+    read -p "Enter Kharej server IP: " kharej_ip
+    read -p "Enter base port (will increment): " base_port
+    read -p "Enter base VNI (will increment): " base_vni
     
-    local config=$(jq -r ".\"$tunnel_name\"" "$TUNNEL_CONFIG")
-    local vxlan_ip=$(echo "$config" | jq -r '.vxlan_ip' | cut -d'/' -f1)
+    echo ""
+    echo "Select IP version for tunnels:"
+    echo "1) IPv4"
+    echo "2) IPv6"
+    echo "3) IPv4 Local"
+    echo "4) IPv6 Local"
+    read -p "Enter choice (1-4): " ip_version_choice
     
-    # Backup existing config
-    cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.backup-$(date +%s) 2>/dev/null
+    local use_local_ip=false
+    case $ip_version_choice in
+        1) ip_version="ipv4";;
+        2) ip_version="ipv6";;
+        3) ip_version="ipv4_local"; use_local_ip=true;;
+        4) ip_version="ipv6_local"; use_local_ip=true;;
+        *) ip_version="ipv4";;
+    esac
     
-    # Create new config
+    # Generate IPv6 prefix if needed
+    local ipv6_prefix=""
+    if [[ "$ip_version" == "ipv6_local" ]]; then
+        ipv6_prefix=$(generate_ipv6_local)
+        echo -e "${CYAN}Generated IPv6 Local Prefix: $ipv6_prefix${NC}"
+    fi
+    
+    # Create tunnels
+    for ((i=1; i<=iran_count; i++)); do
+        local tunnel_name="star-multi-${i}"
+        local current_port=$((base_port + i - 1))
+        local current_vni=$((base_vni + i - 1))
+        
+        if [[ "$use_local_ip" == true ]]; then
+            if [[ "$ip_version" == "ipv4_local" ]]; then
+                local iran_ip="10.0.${i}.1"
+                local vxlan_ip="192.168.${i}.1/24"
+            else
+                local iran_ip=$(get_ipv6_local_address "$ipv6_prefix" "$i")
+                local vxlan_ip=$(get_ipv6_local_address "$ipv6_prefix" "$((100 + i))")
+            fi
+        else
+            read -p "Enter Iran server $i IP: " iran_ip
+            local vxlan_ip="30.${i}.0.1/24"
+        fi
+        
+        echo "Creating tunnel $tunnel_name..."
+        create_tunnel_config "$tunnel_name" "iran" "$ip_version" "$iran_ip" "$kharej_ip" "$current_port" "$current_vni" "$vxlan_ip" "y"
+        setup_tunnel "$tunnel_name"
+        
+        echo -e "${GREEN}✓ Tunnel $tunnel_name created${NC}"
+    done
+    
+    echo -e "${GREEN}Multi-tunnel setup completed!${NC}"
+    echo "All tunnels are now active and configured."
+    
+    read -p "Press Enter to continue..."
+}
+
+# ---------------- HAPROXY MANAGEMENT ----------------
+haproxy_menu() {
+    while true; do
+        show_header
+        echo -e "|${YELLOW}HAProxy Management${NC}"
+        echo "+-----------------------------------------------------------------------------+"
+        echo -e "1${GREEN}►${NC} Install HAProxy"
+        echo -e "2${BLUE}►${NC} Configure Load Balancer"
+        echo -e "3${CYAN}►${NC} Add Port Forwarding"
+        echo -e "4${MAGENTA}►${NC} View HAProxy Status"
+        echo -e "5${YELLOW}►${NC} View Statistics"
+        echo -e "6${RED}►${NC} Clear Configuration"
+        echo -e "7${WHITE}►${NC} Remove HAProxy"
+        echo -e "8${GREEN}►${NC} Back to Main Menu"
+        echo "+-----------------------------------------------------------------------------+"
+        
+        read -p "Enter choice: " haproxy_choice
+        
+        case $haproxy_choice in
+            1) install_haproxy_advanced ;;
+            2) configure_load_balancer ;;
+            3) add_port_forwarding ;;
+            4) view_haproxy_status ;;
+            5) view_haproxy_stats ;;
+            6) clear_haproxy_config ;;
+            7) remove_haproxy_advanced ;;
+            8) return ;;
+            *) echo "Invalid choice!" ;;
+        esac
+    done
+}
+
+install_haproxy_advanced() {
+    echo "Installing HAProxy..."
+    sudo apt-get update
+    sudo apt-get install -y haproxy
+    
+    # Create advanced default configuration
+    cat <<EOF > /etc/haproxy/haproxy.cfg
+global
+    chroot /var/lib/haproxy
+    stats socket /run/haproxy/admin.sock mode 660 level admin
+    stats timeout 30s
+    user haproxy
+    group haproxy
+    daemon
+    log 127.0.0.1:514 local0
+
+defaults
+    mode tcp
+    option dontlognull
+    option log-health-checks
+    timeout connect 5000
+    timeout client 50000
+    timeout server 50000
+    timeout check 5000
+
+# Statistics page
+listen stats
+    bind *:8080
+    stats enable
+    stats uri /stats
+    stats refresh 30s
+    stats admin if TRUE
+    stats show-desc StarTunnel HAProxy Statistics
+    stats show-legends
+EOF
+    
+    systemctl enable haproxy
+    systemctl start haproxy
+    
+    echo -e "${GREEN}HAProxy installed and configured!${NC}"
+    echo -e "${CYAN}Statistics available at: http://$(hostname -I | awk '{print $1}'):8080/stats${NC}"
+    
+    read -p "Press Enter to continue..."
+}
+
+configure_load_balancer() {
+    echo "Configuring Load Balancer..."
+    
+    # Get available tunnels
+    if [[ ! -f "$TUNNEL_CONFIG" ]] || [[ "$(jq 'keys | length' "$TUNNEL_CONFIG" 2>/dev/null)" == "0" ]]; then
+        echo -e "${RED}No tunnels found! Please create tunnels first.${NC}"
+        read -p "Press Enter to continue..."
+        return
+    fi
+    
+    echo "Available tunnels:"
+    jq -r 'keys[]' "$TUNNEL_CONFIG" 2>/dev/null | nl
+    
+    read -p "Enter ports to load balance (comma-separated): " ports
+    
+    # Generate load balancer configuration
+    local config_file="/etc/haproxy/haproxy.cfg"
+    
+    IFS=',' read -ra port_array <<< "$ports"
+    for port in "${port_array[@]}"; do
+        port=$(echo "$port" | tr -d ' ')
+        cat <<EOF >> $config_file
+
+frontend frontend_$port
+    bind *:$port
+    default_backend backend_$port
+
+backend backend_$port
+    balance roundrobin
+    option httpchk
+EOF
+        
+        # Add tunnel servers
+        local counter=1
+        jq -r 'keys[]' "$TUNNEL_CONFIG" 2>/dev/null | while read tunnel; do
+            local config=$(jq -r ".\"$tunnel\"" "$TUNNEL_CONFIG")
+            local vxlan_ip=$(echo "$config" | jq -r '.vxlan_ip' | cut -d'/' -f1)
+            echo "    server tunnel_$counter $vxlan_ip:$port check" >> $config_file
+            ((counter++))
+        done
+    done
+    
+    # Validate and restart HAProxy
+    if haproxy -c -f $config_file; then
+        systemctl restart haproxy
+        echo -e "${GREEN}Load balancer configured successfully!${NC}"
+    else
+        echo -e "${RED}Configuration failed!${NC}"
+    fi
+    
+    read -p "Press Enter to continue..."
+}
+
+add_port_forwarding() {
+    echo "Adding Port Forwarding..."
+    
+    read -p "Enter source port: " src_port
+    read -p "Enter destination IP: " dest_ip
+    read -p "Enter destination port: " dest_port
+    
+    cat <<EOF >> /etc/haproxy/haproxy.cfg
+
+frontend frontend_$src_port
+    bind *:$src_port
+    default_backend backend_$src_port
+
+backend backend_$src_port
+    server dest_server $dest_ip:$dest_port check
+EOF
+    
+    if haproxy -c -f /etc/haproxy/haproxy.cfg; then
+        systemctl restart haproxy
+        echo -e "${GREEN}Port forwarding added successfully!${NC}"
+    else
+        echo -e "${RED}Configuration failed!${NC}"
+    fi
+    
+    read -p "Press Enter to continue..."
+}
+
+view_haproxy_status() {
+    echo -e "${CYAN}HAProxy Status${NC}"
+    echo "=============="
+    
+    if systemctl is-active --quiet haproxy; then
+        echo -e "${GREEN}HAProxy is running${NC}"
+        echo ""
+        echo "Active connections:"
+        netstat -tlnp | grep haproxy
+    else
+        echo -e "${RED}HAProxy is not running${NC}"
+    fi
+    
+    read -p "Press Enter to continue..."
+}
+
+view_haproxy_stats() {
+    echo -e "${CYAN}HAProxy Statistics${NC}"
+    echo "=================="
+    
+    local server_ip=$(hostname -I | awk '{print $1}')
+    echo -e "Statistics URL: ${YELLOW}http://$server_ip:8080/stats${NC}"
+    echo ""
+    echo "You can view detailed statistics in your web browser."
+    
+    read -p "Press Enter to continue..."
+}
+
+clear_haproxy_config() {
+    echo "Clearing HAProxy configuration..."
+    
+    # Backup current config
+    cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.backup-$(date +%s)
+    
+    # Reset to default configuration
     cat <<EOF > /etc/haproxy/haproxy.cfg
 global
     chroot /var/lib/haproxy
@@ -330,35 +777,30 @@ listen stats
     stats uri /stats
     stats refresh 30s
     stats admin if TRUE
-
 EOF
     
-    # Add port configurations
-    IFS=',' read -ra port_array <<< "$ports"
-    for port in "${port_array[@]}"; do
-        port=$(echo "$port" | tr -d ' ')
-        cat <<EOF >> /etc/haproxy/haproxy.cfg
-
-frontend frontend_$port
-    bind *:$port
-    default_backend backend_$port
-
-backend backend_$port
-    balance roundrobin
-    server tunnel_$tunnel_name $vxlan_ip:$port check
-
-EOF
-    done
+    systemctl restart haproxy
+    echo -e "${GREEN}HAProxy configuration cleared!${NC}"
     
-    # Validate and restart HAProxy
-    if haproxy -c -f /etc/haproxy/haproxy.cfg; then
-        systemctl restart haproxy
-        systemctl enable haproxy
-        echo -e "${GREEN}HAProxy configured successfully!${NC}"
-        echo -e "${CYAN}Statistics available at: http://$(hostname -I | awk '{print $1}'):8080/stats${NC}"
+    read -p "Press Enter to continue..."
+}
+
+remove_haproxy_advanced() {
+    echo -e "${RED}Removing HAProxy...${NC}"
+    
+    read -p "Are you sure? (y/N): " confirm
+    if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+        systemctl stop haproxy
+        systemctl disable haproxy
+        apt-get remove --purge -y haproxy
+        apt-get autoremove -y
+        
+        echo -e "${GREEN}HAProxy removed successfully!${NC}"
     else
-        echo -e "${RED}HAProxy configuration failed!${NC}"
+        echo "Operation cancelled."
     fi
+    
+    read -p "Press Enter to continue..."
 }
 
 # ---------------- TUNNEL MANAGEMENT ----------------
@@ -374,7 +816,7 @@ manage_tunnels() {
             return
         fi
         
-        echo -e "Active Tunnels:"
+        echo -e "Active StarTunnels:"
         echo "+-----------------------------------------------------------------------------+"
         
         # List tunnels
@@ -383,12 +825,13 @@ manage_tunnels() {
             local status=$(check_tunnel_status "$tunnel")
             local config=$(jq -r ".\"$tunnel\"" "$TUNNEL_CONFIG")
             local role=$(echo "$config" | jq -r '.role')
+            local ip_version=$(echo "$config" | jq -r '.ip_version')
             local vxlan_ip=$(echo "$config" | jq -r '.vxlan_ip')
             
             if [[ "$status" == "Active" ]]; then
-                echo -e "$counter) ${GREEN}$tunnel${NC} [$role] - $vxlan_ip (${GREEN}$status${NC})"
+                echo -e "$counter) ${GREEN}$tunnel${NC} [$role/$ip_version] - $vxlan_ip (${GREEN}$status${NC})"
             else
-                echo -e "$counter) ${RED}$tunnel${NC} [$role] - $vxlan_ip (${RED}$status${NC})"
+                echo -e "$counter) ${RED}$tunnel${NC} [$role/$ip_version] - $vxlan_ip (${RED}$status${NC})"
             fi
             ((counter++))
         done
@@ -397,7 +840,8 @@ manage_tunnels() {
         echo -e "1${GREEN}►${NC} Start/Stop Tunnel"
         echo -e "2${BLUE}►${NC} Delete Tunnel"
         echo -e "3${CYAN}►${NC} View Tunnel Details"
-        echo -e "4${YELLOW}►${NC} Back to Main Menu"
+        echo -e "4${MAGENTA}►${NC} Clone Tunnel"
+        echo -e "5${YELLOW}►${NC} Back to Main Menu"
         echo "+-----------------------------------------------------------------------------+"
         
         read -p "Enter choice: " manage_choice
@@ -406,10 +850,37 @@ manage_tunnels() {
             1) toggle_tunnel ;;
             2) delete_tunnel ;;
             3) view_tunnel_details ;;
-            4) return ;;
+            4) clone_tunnel ;;
+            5) return ;;
             *) echo "Invalid choice!" ;;
         esac
     done
+}
+
+clone_tunnel() {
+    echo "Available tunnels:"
+    jq -r 'keys[]' "$TUNNEL_CONFIG" 2>/dev/null | nl
+    read -p "Enter tunnel name to clone: " source_tunnel
+    
+    if ! jq -e ".\"$source_tunnel\"" "$TUNNEL_CONFIG" >/dev/null 2>&1; then
+        echo -e "${RED}Tunnel not found!${NC}"
+        read -p "Press Enter to continue..."
+        return
+    fi
+    
+    read -p "Enter new tunnel name: " new_tunnel
+    read -p "Enter new VNI: " new_vni
+    
+    # Clone configuration
+    local config=$(jq -r ".\"$source_tunnel\"" "$TUNNEL_CONFIG")
+    local updated_config=$(echo "$config" | jq --arg vni "$new_vni" '.vni = ($vni | tonumber)')
+    
+    jq --arg name "$new_tunnel" --argjson config "$updated_config" '.[$name] = $config' "$TUNNEL_CONFIG" > "$TUNNEL_CONFIG.tmp" && mv "$TUNNEL_CONFIG.tmp" "$TUNNEL_CONFIG"
+    
+    setup_tunnel "$new_tunnel"
+    
+    echo -e "${GREEN}Tunnel cloned successfully!${NC}"
+    read -p "Press Enter to continue..."
 }
 
 toggle_tunnel() {
@@ -427,10 +898,10 @@ toggle_tunnel() {
     
     if [[ "$status" == "Active" ]]; then
         systemctl stop "${SERVICE_PREFIX}-${tunnel_name}.service"
-        echo -e "${YELLOW}Tunnel '$tunnel_name' stopped.${NC}"
+        echo -e "${YELLOW}StarTunnel '$tunnel_name' stopped.${NC}"
     else
         systemctl start "${SERVICE_PREFIX}-${tunnel_name}.service"
-        echo -e "${GREEN}Tunnel '$tunnel_name' started.${NC}"
+        echo -e "${GREEN}StarTunnel '$tunnel_name' started.${NC}"
     fi
     
     read -p "Press Enter to continue..."
@@ -463,8 +934,8 @@ delete_tunnel() {
         
         systemctl daemon-reload
         
-        echo -e "${GREEN}Tunnel '$tunnel_name' deleted successfully!${NC}"
-        log_message "Tunnel $tunnel_name deleted"
+        echo -e "${GREEN}StarTunnel '$tunnel_name' deleted successfully!${NC}"
+        log_message "StarTunnel $tunnel_name deleted"
     else
         echo "Operation cancelled."
     fi
@@ -486,8 +957,8 @@ view_tunnel_details() {
     local config=$(jq -r ".\"$tunnel_name\"" "$TUNNEL_CONFIG")
     local status=$(check_tunnel_status "$tunnel_name")
     
-    echo -e "\n${CYAN}Tunnel Details: $tunnel_name${NC}"
-    echo "================================="
+    echo -e "\n${CYAN}StarTunnel Details: $tunnel_name${NC}"
+    echo "====================================="
     echo "Role: $(echo "$config" | jq -r '.role')"
     echo "IP Version: $(echo "$config" | jq -r '.ip_version')"
     echo "Local IP: $(echo "$config" | jq -r '.local_ip')"
@@ -506,7 +977,7 @@ view_tunnel_details() {
 monitor_tunnels() {
     while true; do
         show_header
-        echo -e "|${YELLOW}Tunnel Monitoring${NC}"
+        echo -e "|${YELLOW}StarTunnel Monitoring${NC}"
         echo "+-----------------------------------------------------------------------------+"
         
         if [[ ! -f "$TUNNEL_CONFIG" ]] || [[ "$(jq 'keys | length' "$TUNNEL_CONFIG" 2>/dev/null)" == "0" ]]; then
@@ -518,7 +989,7 @@ monitor_tunnels() {
         # Show tunnel statistics
         echo -e "${CYAN}Tunnel Status Overview:${NC}"
         echo "+-----------------------------------------------------------------------------+"
-        printf "%-15s %-10s %-15s %-10s %-10s\n" "NAME" "STATUS" "VXLAN_IP" "PORT" "VNI"
+        printf "%-15s %-10s %-15s %-10s %-10s %-15s\n" "NAME" "STATUS" "VXLAN_IP" "PORT" "VNI" "IP_VERSION"
         echo "+-----------------------------------------------------------------------------+"
         
         jq -r 'keys[]' "$TUNNEL_CONFIG" 2>/dev/null | while read tunnel; do
@@ -527,11 +998,12 @@ monitor_tunnels() {
             local vxlan_ip=$(echo "$config" | jq -r '.vxlan_ip' | cut -d'/' -f1)
             local port=$(echo "$config" | jq -r '.port')
             local vni=$(echo "$config" | jq -r '.vni')
+            local ip_version=$(echo "$config" | jq -r '.ip_version')
             
             if [[ "$status" == "Active" ]]; then
-                printf "%-15s ${GREEN}%-10s${NC} %-15s %-10s %-10s\n" "$tunnel" "$status" "$vxlan_ip" "$port" "$vni"
+                printf "%-15s ${GREEN}%-10s${NC} %-15s %-10s %-10s %-15s\n" "$tunnel" "$status" "$vxlan_ip" "$port" "$vni" "$ip_version"
             else
-                printf "%-15s ${RED}%-10s${NC} %-15s %-10s %-10s\n" "$tunnel" "$status" "$vxlan_ip" "$port" "$vni"
+                printf "%-15s ${RED}%-10s${NC} %-15s %-10s %-10s %-15s\n" "$tunnel" "$status" "$vxlan_ip" "$port" "$vni" "$ip_version"
             fi
         done
         
@@ -539,7 +1011,8 @@ monitor_tunnels() {
         echo -e "1${GREEN}►${NC} Real-time Monitoring"
         echo -e "2${BLUE}►${NC} View Logs"
         echo -e "3${CYAN}►${NC} Network Statistics"
-        echo -e "4${YELLOW}►${NC} Back to Main Menu"
+        echo -e "4${MAGENTA}►${NC} Performance Test"
+        echo -e "5${YELLOW}►${NC} Back to Main Menu"
         echo "+-----------------------------------------------------------------------------+"
         
         read -p "Enter choice: " monitor_choice
@@ -548,31 +1021,74 @@ monitor_tunnels() {
             1) realtime_monitoring ;;
             2) view_logs ;;
             3) network_stats ;;
-            4) return ;;
+            4) performance_test ;;
+            5) return ;;
             *) echo "Invalid choice!" ;;
         esac
     done
 }
 
+performance_test() {
+    echo -e "${CYAN}Performance Test${NC}"
+    echo "================"
+    
+    echo "Available tunnels:"
+    jq -r 'keys[]' "$TUNNEL_CONFIG" 2>/dev/null | nl
+    read -p "Enter tunnel name to test: " tunnel_name
+    
+    if ! jq -e ".\"$tunnel_name\"" "$TUNNEL_CONFIG" >/dev/null 2>&1; then
+        echo -e "${RED}Tunnel not found!${NC}"
+        read -p "Press Enter to continue..."
+        return
+    fi
+    
+    local config=$(jq -r ".\"$tunnel_name\"" "$TUNNEL_CONFIG")
+    local remote_ip=$(echo "$config" | jq -r '.remote_ip')
+    local vxlan_ip=$(echo "$config" | jq -r '.vxlan_ip' | cut -d'/' -f1)
+    
+    echo "Testing connectivity..."
+    
+    # Ping test
+    echo -e "\n${YELLOW}1. Ping Test to Remote IP:${NC}"
+    ping -c 4 "$remote_ip"
+    
+    echo -e "\n${YELLOW}2. Ping Test to VXLAN IP:${NC}"
+    ping -c 4 "$vxlan_ip"
+    
+    # Speed test (if iperf is available)
+    if command -v iperf3 &> /dev/null; then
+        echo -e "\n${YELLOW}3. Speed Test Available${NC}"
+        read -p "Run iperf3 speed test? (y/N): " speed_test
+        if [[ "$speed_test" == "y" || "$speed_test" == "Y" ]]; then
+            echo "Starting iperf3 client test..."
+            iperf3 -c "$vxlan_ip" -t 10 || echo "iperf3 server not running on remote end"
+        fi
+    fi
+    
+    read -p "Press Enter to continue..."
+}
+
 realtime_monitoring() {
     echo -e "${CYAN}Real-time Monitoring (Press Ctrl+C to stop)${NC}"
-    echo "==========================================="
+    echo "=============================================="
     
     while true; do
         clear
-        echo -e "${CYAN}Lena Tunnel - Real-time Status${NC}"
+        echo -e "${CYAN}StarTunnel - Real-time Status${NC}"
         echo "$(date)"
-        echo "==========================================="
+        echo "=============================================="
         
         jq -r 'keys[]' "$TUNNEL_CONFIG" 2>/dev/null | while read tunnel; do
             local status=$(check_tunnel_status "$tunnel")
             local config=$(jq -r ".\"$tunnel\"" "$TUNNEL_CONFIG")
             local vxlan_ip=$(echo "$config" | jq -r '.vxlan_ip' | cut -d'/' -f1)
             local vni=$(echo "$config" | jq -r '.vni')
+            local ip_version=$(echo "$config" | jq -r '.ip_version')
             
             echo -e "Tunnel: ${YELLOW}$tunnel${NC}"
             echo -e "Status: $([[ "$status" == "Active" ]] && echo -e "${GREEN}$status${NC}" || echo -e "${RED}$status${NC}")"
             echo -e "VXLAN IP: $vxlan_ip"
+            echo -e "IP Version: $ip_version"
             
             if [[ "$status" == "Active" ]]; then
                 # Check if interface exists and get stats
@@ -584,7 +1100,7 @@ realtime_monitoring() {
                     echo -e "Interface: ${RED}DOWN${NC}"
                 fi
             fi
-            echo "-------------------------------------------"
+            echo "----------------------------------------------"
         done
         
         sleep 3
@@ -592,8 +1108,8 @@ realtime_monitoring() {
 }
 
 view_logs() {
-    echo -e "${CYAN}Tunnel Logs${NC}"
-    echo "============"
+    echo -e "${CYAN}StarTunnel Logs${NC}"
+    echo "==============="
     
     if [[ -f "$LOG_FILE" ]]; then
         echo "Recent log entries:"
@@ -615,11 +1131,19 @@ network_stats() {
     
     # Show routing table
     echo -e "\n${YELLOW}Routing Table:${NC}"
-    ip route | grep -E "30\.0\.0\." || echo "No tunnel routes found"
+    ip route | grep -E "30\.0\.0\.|192\.168\.|10\." || echo "No tunnel routes found"
+    
+    # Show IPv6 routes if any
+    echo -e "\n${YELLOW}IPv6 Routes:${NC}"
+    ip -6 route | grep -E "fd:" || echo "No IPv6 tunnel routes found"
     
     # Show iptables rules
-    echo -e "\n${YELLOW}Firewall Rules:${NC}"
-    iptables -L INPUT | grep -E "ACCEPT|udp|30\.0\.0\." || echo "No specific tunnel rules found"
+    echo -e "\n${YELLOW}IPv4 Firewall Rules:${NC}"
+    iptables -L INPUT | grep -E "ACCEPT|udp|30\.0\.0\.|192\.168\.|10\." || echo "No specific tunnel rules found"
+    
+    # Show ip6tables rules
+    echo -e "\n${YELLOW}IPv6 Firewall Rules:${NC}"
+    ip6tables -L INPUT | grep -E "ACCEPT|udp|fd:" || echo "No specific IPv6 tunnel rules found"
     
     read -p "Press Enter to continue..."
 }
@@ -632,9 +1156,11 @@ advanced_settings() {
         echo "+-----------------------------------------------------------------------------+"
         echo -e "1${GREEN}►${NC} Backup Configuration"
         echo -e "2${BLUE}►${NC} Restore Configuration"
-        echo -e "3${CYAN}►${NC} Update Script"
+        echo -e "3${CYAN}►${NC} Update StarTunnel"
         echo -e "4${MAGENTA}►${NC} System Optimization"
-        echo -e "5${YELLOW}►${NC} Back to Main Menu"
+        echo -e "5${YELLOW}►${NC} Network Diagnostics"
+        echo -e "6${WHITE}►${NC} Export Configuration"
+        echo -e "7${GREEN}►${NC} Back to Main Menu"
         echo "+-----------------------------------------------------------------------------+"
         
         read -p "Enter choice: " advanced_choice
@@ -644,23 +1170,25 @@ advanced_settings() {
             2) restore_config ;;
             3) update_script ;;
             4) system_optimization ;;
-            5) return ;;
+            5) network_diagnostics ;;
+            6) export_config ;;
+            7) return ;;
             *) echo "Invalid choice!" ;;
         esac
     done
 }
 
 backup_config() {
-    local backup_file="/root/lena-tunnel-backup-$(date +%Y%m%d-%H%M%S).tar.gz"
+    local backup_file="/root/star-tunnel-backup-$(date +%Y%m%d-%H%M%S).tar.gz"
     
     echo "Creating backup..."
     tar -czf "$backup_file" -C / \
-        etc/lena-tunnel \
+        etc/star-tunnel \
         usr/local/bin/setup_*.sh \
         usr/local/bin/cleanup_*.sh \
-        etc/systemd/system/lena-tunnel-*.service \
+        etc/systemd/system/star-tunnel-*.service \
         etc/haproxy/haproxy.cfg \
-        var/log/lena-tunnel.log 2>/dev/null
+        var/log/star-tunnel.log 2>/dev/null
     
     echo -e "${GREEN}Backup created: $backup_file${NC}"
     read -p "Press Enter to continue..."
@@ -668,7 +1196,7 @@ backup_config() {
 
 restore_config() {
     echo "Available backup files:"
-    ls -la /root/lena-tunnel-backup-*.tar.gz 2>/dev/null || echo "No backup files found"
+    ls -la /root/star-tunnel-backup-*.tar.gz 2>/dev/null || echo "No backup files found"
     
     read -p "Enter backup file path: " backup_file
     
@@ -691,18 +1219,34 @@ restore_config() {
 }
 
 update_script() {
-    echo "Updating Lena Tunnel script..."
+    echo "Updating StarTunnel script..."
+    
+    local update_status=$(check_for_updates)
+    
+    if [[ "$update_status" == "up_to_date" ]]; then
+        echo -e "${GREEN}StarTunnel is already up to date!${NC}"
+        read -p "Press Enter to continue..."
+        return
+    fi
+    
+    echo -e "${YELLOW}New version available!${NC}"
     
     # Download latest version
-    if curl -fsSL "https://raw.githubusercontent.com/Moriostar/tunellstar/main/install.sh" -o "/tmp/lena-update.sh"; then
-        chmod +x "/tmp/lena-update.sh"
+    if curl -fsSL "$UPDATE_URL" -o "/tmp/star-tunnel-update.sh"; then
+        chmod +x "/tmp/star-tunnel-update.sh"
         
         read -p "Update downloaded. Install now? (y/N): " confirm
         if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
-            bash "/tmp/lena-update.sh"
+            # Create backup before update
+            backup_config
+            
+            # Install update
+            bash "/tmp/star-tunnel-update.sh"
+            
+            echo -e "${GREEN}StarTunnel updated successfully!${NC}"
         fi
         
-        rm -f "/tmp/lena-update.sh"
+        rm -f "/tmp/star-tunnel-update.sh"
     else
         echo -e "${RED}Failed to download update!${NC}"
     fi
@@ -717,47 +1261,149 @@ system_optimization() {
     echo "1) Install BBR"
     echo "2) Optimize Network Parameters"
     echo "3) Configure Firewall"
-    echo "4) All Optimizations"
+    echo "4) IPv6 Optimization"
+    echo "5) All Optimizations"
     
     read -p "Enter choice: " opt_choice
     
     case $opt_choice in
-        1|4) install_bbr ;;
+        1|5) install_bbr ;;
     esac
     
-    if [[ "$opt_choice" == "2" || "$opt_choice" == "4" ]]; then
+    if [[ "$opt_choice" == "2" || "$opt_choice" == "5" ]]; then
         echo "Optimizing network parameters..."
         cat <<EOF >> /etc/sysctl.conf
-# Lena Tunnel Optimizations
+# StarTunnel Optimizations
 net.core.rmem_max = 134217728
 net.core.wmem_max = 134217728
 net.ipv4.tcp_rmem = 4096 87380 134217728
 net.ipv4.tcp_wmem = 4096 65536 134217728
 net.ipv4.tcp_congestion_control = bbr
 net.core.default_qdisc = fq
+net.ipv4.ip_forward = 1
+net.ipv6.conf.all.forwarding = 1
+net.core.netdev_max_backlog = 5000
+net.ipv4.tcp_fastopen = 3
 EOF
         sysctl -p
         echo -e "${GREEN}Network parameters optimized!${NC}"
     fi
     
-    if [[ "$opt_choice" == "3" || "$opt_choice" == "4" ]]; then
+    if [[ "$opt_choice" == "3" || "$opt_choice" == "5" ]]; then
         echo "Configuring firewall..."
         # Add basic firewall rules
         iptables -I INPUT -i lo -j ACCEPT
         iptables -I INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+        ip6tables -I INPUT -i lo -j ACCEPT
+        ip6tables -I INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
         echo -e "${GREEN}Firewall configured!${NC}"
     fi
+    
+    if [[ "$opt_choice" == "4" || "$opt_choice" == "5" ]]; then
+        echo "Optimizing IPv6..."
+        cat <<EOF >> /etc/sysctl.conf
+# IPv6 Optimizations
+net.ipv6.conf.all.disable_ipv6 = 0
+net.ipv6.conf.default.disable_ipv6 = 0
+net.ipv6.conf.lo.disable_ipv6 = 0
+net.ipv6.conf.all.accept_ra = 1
+net.ipv6.conf.default.accept_ra = 1
+EOF
+        sysctl -p
+        echo -e "${GREEN}IPv6 optimized!${NC}"
+    fi
+    
+    read -p "Press Enter to continue..."
+}
+
+network_diagnostics() {
+    echo -e "${CYAN}Network Diagnostics${NC}"
+    echo "==================="
+    
+    echo "1) Test Internet Connectivity"
+    echo "2) Test DNS Resolution"
+    echo "3) Check Open Ports"
+    echo "4) Network Interface Status"
+    echo "5) Route Table Analysis"
+    echo "6) Full Network Report"
+    
+    read -p "Enter choice: " diag_choice
+    
+    case $diag_choice in
+        1)
+            echo "Testing internet connectivity..."
+            ping -c 4 8.8.8.8
+            ping -c 4 google.com
+            ;;
+        2)
+            echo "Testing DNS resolution..."
+            nslookup google.com
+            nslookup google.com 8.8.8.8
+            ;;
+        3)
+            echo "Checking open ports..."
+            netstat -tlnp | grep -E ":80|:443|:22|:8080"
+            ;;
+        4)
+            echo "Network interface status..."
+            ip link show
+            ip addr show
+            ;;
+        5)
+            echo "Route table analysis..."
+            ip route show
+            ip -6 route show
+            ;;
+        6)
+            echo "Generating full network report..."
+            echo "===================" > /tmp/network-report.txt
+            echo "Network Interfaces:" >> /tmp/network-report.txt
+            ip addr show >> /tmp/network-report.txt
+            echo "===================" >> /tmp/network-report.txt
+            echo "Routing Table:" >> /tmp/network-report.txt
+            ip route show >> /tmp/network-report.txt
+            echo "===================" >> /tmp/network-report.txt
+            echo "Open Ports:" >> /tmp/network-report.txt
+            netstat -tlnp >> /tmp/network-report.txt
+            echo "Report saved to /tmp/network-report.txt"
+            ;;
+    esac
+    
+    read -p "Press Enter to continue..."
+}
+
+export_config() {
+    echo "Exporting StarTunnel configuration..."
+    
+    local export_file="/root/star-tunnel-config-$(date +%Y%m%d-%H%M%S).json"
+    
+    # Create comprehensive configuration export
+    jq -n --slurpfile tunnels "$TUNNEL_CONFIG" \
+          --arg version "$SCRIPT_VERSION" \
+          --arg exported "$(date -Iseconds)" \
+          --arg hostname "$(hostname)" \
+          --arg ip "$(hostname -I | awk '{print $1}')" \
+          '{
+              version: $version,
+              exported: $exported,
+              hostname: $hostname,
+              server_ip: $ip,
+              tunnels: $tunnels[0]
+          }' > "$export_file"
+    
+    echo -e "${GREEN}Configuration exported to: $export_file${NC}"
+    echo "This file can be imported on another server."
     
     read -p "Press Enter to continue..."
 }
 
 # ---------------- UNINSTALL ----------------
 uninstall_all() {
-    echo -e "${RED}WARNING: This will remove all tunnels and configurations!${NC}"
+    echo -e "${RED}WARNING: This will remove all StarTunnels and configurations!${NC}"
     read -p "Are you sure? Type 'YES' to confirm: " confirm
     
     if [[ "$confirm" == "YES" ]]; then
-        echo "Removing all tunnels..."
+        echo "Removing all StarTunnels..."
         
         # Stop and remove all services
         if [[ -f "$TUNNEL_CONFIG" ]]; then
@@ -781,7 +1427,7 @@ uninstall_all() {
         
         systemctl daemon-reload
         
-        echo -e "${GREEN}All tunnels removed successfully!${NC}"
+        echo -e "${GREEN}All StarTunnels removed successfully!${NC}"
     else
         echo "Operation cancelled."
     fi
@@ -801,9 +1447,16 @@ install_bbr() {
     fi
     
     # Install BBR
-    curl -fsSL https://raw.githubusercontent.com/MrAminiDev/NetOptix/main/scripts/bbr.sh -o /tmp/bbr.sh
-    bash /tmp/bbr.sh
-    rm -f /tmp/bbr.sh
+    echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+    echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+    sysctl -p
+    
+    # Verify BBR installation
+    if sysctl net.ipv4.tcp_congestion_control | grep -q bbr; then
+        echo -e "${GREEN}BBR installed and activated successfully!${NC}"
+    else
+        echo -e "${RED}BBR installation failed!${NC}"
+    fi
     
     read -p "Press Enter to continue..."
 }
@@ -817,23 +1470,29 @@ main() {
     fi
     
     # Create initial log entry
-    log_message "Lena Tunnel v2.0 started"
+    log_message "StarTunnel v$SCRIPT_VERSION started"
     
     # Main menu loop
     while true; do
         main_menu
-        read -p "Enter your choice [1-7]: " choice
+        read -p "Enter your choice [0-9]: " choice
         
         case $choice in
             1) create_tunnel ;;
             2) manage_tunnels ;;
             3) monitor_tunnels ;;
-            4) advanced_settings ;;
-            5) uninstall_all ;;
-            6) install_bbr ;;
-            7) 
-                echo -e "${GREEN}Thank you for using Lena Tunnel v2.0!${NC}"
+            4) haproxy_menu ;;
+            5) multi_tunnel_setup ;;
+            6) advanced_settings ;;
+            7) uninstall_all ;;
+            8) install_bbr ;;
+            9) 
+                update_script
+                ;;
+            0) 
+                echo -e "${GREEN}Thank you for using StarTunnel v$SCRIPT_VERSION!${NC}"
                 echo -e "${CYAN}Telegram: @ServerStar_ir${NC}"
+                echo -e "${MAGENTA}⭐ StarTunnel - Advanced VxLAN Solution ⭐${NC}"
                 exit 0
                 ;;
             *)
@@ -845,4 +1504,85 @@ main() {
 }
 
 # Run main program
-main "$@"
+main "$@"</div>
+        </div>
+
+        <!-- Installation Instructions -->
+        <div class="mt-8 p-6 bg-gray-800 rounded-lg">
+            <h2 class="text-2xl font-bold mb-4 text-white">
+                <i class="fas fa-download"></i> نحوه نصب
+            </h2>
+            <div class="space-y-4">
+                <div class="p-4 bg-gray-700 rounded-lg">
+                    <h3 class="text-lg font-semibold text-yellow-400 mb-2">
+                        <i class="fas fa-step-forward"></i> مرحله 1: دانلود و نصب
+                    </h3>
+                    <code class="text-green-400">
+                        bash &lt;(curl -Ls https://raw.githubusercontent.com/Moriistar/tunellstar/main/install.sh)
+                    </code>
+                </div>
+                
+                <div class="p-4 bg-gray-700 rounded-lg">
+                    <h3 class="text-lg font-semibold text-blue-400 mb-2">
+                        <i class="fas fa-cogs"></i> مرحله 2: پیکربندی
+                    </h3>
+                    <p class="text-gray-300">بعد از نصب، منو اصلی باز می‌شود و می‌توانید:</p>
+                    <ul class="list-disc list-inside text-gray-300 mt-2">
+                        <li>تانل جدید ایجاد کنید</li>
+                        <li>تانل‌های موجود را مدیریت کنید</li>
+                        <li>HAProxy را پیکربندی کنید</li>
+                        <li>تانل‌های همزمان راه‌اندازی کنید</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features List -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-6 bg-gray-800 rounded-lg">
+                <h3 class="text-xl font-bold mb-4 text-green-400">
+                    <i class="fas fa-star"></i> ویژگی‌های جدید StarTunnel v3.0
+                </h3>
+                <ul class="space-y-2 text-gray-300">
+                    <li><i class="fas fa-check text-green-400"></i> تغییر کامل نام از Lena به StarTunnel</li>
+                    <li><i class="fas fa-check text-green-400"></i> پشتیبانی کامل از IPv6 لوکال</li>
+                    <li><i class="fas fa-check text-green-400"></i> تانل‌های همزمان (چند سرور ایران به یک خارج)</li>
+                    <li><i class="fas fa-check text-green-400"></i> منو HAProxy پیشرفته</li>
+                    <li><i class="fas fa-check text-green-400"></i> قابلیت ارتقا خودکار</li>
+                    <li><i class="fas fa-check text-green-400"></i> مانیتورینگ پیشرفته</li>
+                    <li><i class="fas fa-check text-green-400"></i> تست عملکرد</li>
+                    <li><i class="fas fa-check text-green-400"></i> تشخیص شبکه</li>
+                </ul>
+            </div>
+            
+            <div class="p-6 bg-gray-800 rounded-lg">
+                <h3 class="text-xl font-bold mb-4 text-blue-400">
+                    <i class="fas fa-network-wired"></i> قابلیت‌های شبکه
+                </h3>
+                <ul class="space-y-2 text-gray-300">
+                    <li><i class="fas fa-globe text-blue-400"></i> پشتیبانی از IPv4 و IPv6</li>
+                    <li><i class="fas fa-shield-alt text-blue-400"></i> VxLAN امن و پایدار</li>
+                    <li><i class="fas fa-balance-scale text-blue-400"></i> Load Balancing هوشمند</li>
+                    <li><i class="fas fa-tachometer-alt text-blue-400"></i> بهینه‌سازی BBR</li>
+                    <li><i class="fas fa-copy text-blue-400"></i> کلون کردن تانل‌ها</li>
+                    <li><i class="fas fa-chart-line text-blue-400"></i> آمار و گزارش‌های دقیق</li>
+                    <li><i class="fas fa-backup text-blue-400"></i> پشتیبان‌گیری خودکار</li>
+                    <li><i class="fas fa-sync-alt text-blue-400"></i> بازیابی آسان</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center p-6 bg-gray-800 rounded-lg">
+            <p class="text-gray-400">
+                <i class="fas fa-code"></i> Developed by Moriistar | 
+                <i class="fab fa-telegram"></i> @ServerStar_ir | 
+                <i class="fas fa-star"></i> StarTunnel v3.0 Advanced
+            </p>
+            <p class="text-sm text-gray-500 mt-2">
+                Enhanced VxLAN Tunnel Manager with IPv6 Local Support, Multi-Tunnel & HAProxy Integration
+            </p>
+        </div>
+    </div>
+</body>
+</html>
